@@ -1,0 +1,2879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusinessBuddy — AI-Powered Enterprise Advisory & Feasibility Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js for financial and feasibility charts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<!-- Leaflet.js for Real Interactive Map Tiles & Radius Circles -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="utility-bar">
+  <div class="left">
+    <a href="#" onclick="return false;" id="utilSkip">Skip to Main Content</a>
+    <a href="#" onclick="return false;" id="utilAccess">Screen Reader Access</a>
+    <a href="#" onclick="toggleHighContrast()" id="utilContrast">Accessibility</a>
+  </div>
+  <div class="right">
+    <a href="#" onclick="openChat();return false;" id="utilFaq">FAQ</a>
+    <a href="#" onclick="openChat();return false;" id="utilContact">Contact</a>
+    <span id="utilProtoNotice">SIH 2026 — Software Problem Statement 91</span>
+  </div>
+</div>
+<div class="emblem-strip"></div>
+
+<header class="site-header">
+  <div class="brand" onclick="goHome()">
+    <div class="brand-mark">BB</div>
+    <div class="brand-text">
+      <div class="name">BUSINESS<span>BUDDY</span></div>
+      <div class="tag" id="headerTagline">Enterprise Advisory &amp; Feasibility Platform</div>
+    </div>
+  </div>
+  <div class="header-actions" style="position:relative;">
+    <button class="icon-btn" onclick="toggleMenu('lang')">🌐 <span id="curLangLabel">English</span></button>
+    <div class="lang-menu hidden" id="langMenu"></div>
+    <button class="icon-btn" onclick="toggleHighContrast()">◐ <span id="lblContrast">Contrast</span></button>
+    <button class="icon-btn" onclick="toggleMenu('help')">❓ <span id="lblHelp">Help</span></button>
+    <div class="help-menu hidden" id="helpMenu">
+      <button onclick="openChat()" id="helpAskAi">Ask BusinessBuddy AI</button>
+      <button onclick="alert('FAQ: BusinessBuddy is a Smart India Hackathon 2026 prototype for Problem Statement 91.')" id="helpFaq">FAQ</button>
+      <button onclick="alert('Helpline (prototype): 1800-000-000')" id="helpSupport">Contact Support</button>
+    </div>
+    <span id="headerAuthArea"></span>
+  </div>
+</header>
+
+<main id="view-root"></main>
+
+<div id="chatFab"></div>
+<div id="chatPanel"></div>
+
+<div class="mobile-tabbar" id="mobileTabbar"></div>
+
+<script>
+// ============================================================================
+// 1. EXTENSIBLE I18N SYSTEM (English, Hindi, Assamese + Future NE Languages)
+// ============================================================================
+const I18N = {
+  en: {
+    name: "English",
+    tagline: "Enterprise Advisory & Feasibility Platform",
+    nav: {
+      dashboard: "Dashboard",
+      assessment: "Business Assessment",
+      market: "Local Market",
+      report: "Feasibility Report",
+      scheme: "Scheme Calculator",
+      emi: "EMI Calculator",
+      repayment: "Repayment Plan",
+      plan: "Business Plan",
+      ai: "BusinessBuddy AI",
+      profile: "My Profile",
+      settings: "Settings",
+      logout: "Logout",
+      home: "Home",
+      assess: "Assess",
+      reportShort: "Report",
+      emiShort: "EMI",
+      planShort: "Plan"
+    },
+    common: {
+      location: "Location",
+      state: "State",
+      district: "District",
+      village: "Village / Town",
+      pinCode: "PIN Code",
+      marginCapital: "Available Margin Capital",
+      projectCost: "Estimated Project Cost",
+      loanAmount: "Eligible Loan Amount",
+      radius: "Coverage Radius",
+      km: "km",
+      next: "Next →",
+      back: "← Back",
+      save: "Save Changes",
+      login: "Login",
+      logout: "Logout",
+      register: "Register",
+      guest: "Guest Mode",
+      instant: "Instant Assessment",
+      useCurrentLocation: "📍 Use Current Location",
+      detectingLocation: "⏳ Detecting Location…",
+      locationUpdated: "📍 Location Updated!",
+      month: "mo",
+      year: "yrs",
+      pa: "p.a.",
+      rupee: "₹",
+      currency: "₹",
+      custom: "Custom",
+      all: "All",
+      step: "Step",
+      recommended: "Recommended",
+      expandMap: "⛶ Expand Map",
+      collapseMap: "🗕 Collapse Map"
+    },
+    categories: {
+      'Dairy & Livestock': "Dairy & Livestock",
+      'Agriculture & Food Processing': "Agriculture & Food Processing",
+      'Retail': "Retail & Grocery",
+      'Textiles & Handicrafts': "Textiles & Handicrafts",
+      'Fisheries': "Fisheries & Aquaculture",
+      'Food & Catering': "Food & Catering",
+      'Repair & Services': "Repair & Services",
+      'Transport & Logistics': "Transport & Logistics",
+      'Digital Services': "Digital Services (CSC/Online)",
+      'Other': "Other Enterprise"
+    },
+    hero: {
+      eyebrow: "Smart India Hackathon 2026 · Software PS 91",
+      title: "Think Local. Plan Smart.<br>Grow with <span>BusinessBuddy</span>",
+      subtitle: "A minimalist advisory platform for micro-entrepreneurs. Evaluate real geographic reach, competitor pricing, and financing scheme eligibility with precision.",
+      startBtn: "⚡ Start Assessment (No Sign In)",
+      demoBtn: "Try Demo Account",
+      jMargin: "Available Margin Capital",
+      jCost: "Calculated Project Cost (10% Rule)",
+      jLoan: "Eligible Institutional Loan",
+      jScheme: "Term Loan Scheme · 8% p.a. · 7 Yrs",
+      jReport: "Real Map & Verified Feasibility Report"
+    },
+    features: {
+      f1Title: "Real Map Demographics",
+      f1Desc: "Accurate OpenStreetMap reach & competitor mapping within your custom radius.",
+      f2Title: "Calculated Economics",
+      f2Desc: "Category-specific benchmarks, unit prices, and operating margins.",
+      f3Title: "Feasibility Model",
+      f3Desc: "Mathematical scoring model based on capital adequacy and reach density.",
+      f4Title: "BusinessBuddy AI",
+      f4Desc: "Multilingual assistant supporting Indian languages for enterprise planning."
+    },
+    steps: {
+      eyebrow: "How it works",
+      title: "A 4-Step Path to a Bank-Ready Plan",
+      subtitle: "From local territory definition to scheme financing sanction.",
+      s1Title: "Enter Location & Margin",
+      s1Desc: "Share your State, District, Village, Pin Code, and available capital.",
+      s2Title: "Select Business Category",
+      s2Desc: "Choose from 10 enterprise sectors with verified economic benchmarks.",
+      s3Title: "Generate Feasibility Analysis",
+      s3Desc: "Real map radius, competitor benchmarking, SWOT, and risk assessment.",
+      s4Title: "Confirm Loan & Repayment",
+      s4Desc: "Auto-matched government scheme with full amortization breakdown."
+    },
+    auth: {
+      welcomeTitle: "Sign in to BusinessBuddy",
+      welcomeSub: "Or proceed instantly with guest access.",
+      tabPassword: "Mobile & Password",
+      tabOtp: "Login with OTP",
+      mobileLabel: "Mobile Number",
+      passwordLabel: "Password",
+      forgotPassword: "Forgot Password?",
+      sendOtpBtn: "Send OTP",
+      guestPrompt: "Want to start your business assessment immediately?",
+      guestBtn: "⚡ Skip Sign In & Start Assessment",
+      newToApp: "New to BusinessBuddy?",
+      createAccount: "Create an Account",
+      demoLabel: "ONE-CLICK DEMO ACCESS",
+      demoEntrepreneur: "🧑‍🌾 Entrepreneur Demo",
+      demoAdmin: "🛡️ Administrator Demo",
+      verifyTitle: "Verify Mobile Number",
+      verifySub: "An OTP has been sent to your registered mobile number.",
+      verifyBtn: "Verify & Continue",
+      resendOtp: "Resend OTP",
+      sideTitle: "A digital companion for<br>informed enterprise planning.",
+      sideSub: "Access your saved business assessments, real map reach analysis, and scheme amortization schedules."
+    },
+    dashboard: {
+      welcome: "Welcome",
+      guestBadge: "Guest",
+      statFeasibility: "Feasibility Score",
+      statReach: "Target Market Reach",
+      statCost: "Calculated Project Cost",
+      statLoan: "Eligible Loan Amount",
+      activeIdeaTitle: "Active Business Idea",
+      nextMilestoneTitle: "Next Milestone",
+      nextMilestoneDesc: "Inspect your dynamic feasibility report and verify the unit economics before submitting loan applications.",
+      viewReportBtn: "View Feasibility Report",
+      schemeCalcBtn: "Scheme Calculator",
+      modulesTitle: "Financial Planning Modules"
+    },
+    assessment: {
+      title: "Business Assessment",
+      subtitle: "Enterprise Assessment Workflow",
+      step1Head: "1. Location & Market Radius",
+      step2Head: "2. Entrepreneur Profile",
+      step3Head: "3. Choose Business Sector",
+      step4Head: "4. Capital & Financing Verification",
+      step5Head: "5. Generate Calculated Feasibility Report",
+      step2Sub: "Enter available capital and experience parameters.",
+      familyMembers: "Family Members Involved",
+      experience: "Previous Experience",
+      existingBusiness: "Existing Business",
+      describeIdea: "Briefly describe your venture idea",
+      describePlaceholder: "e.g. Fresh dairy doorstep delivery and value-added curd supply.",
+      step4Desc: "Under statutory rural enterprise norms, your 10% margin unlocks 90% loan eligibility.",
+      confirmMargin: "Confirm Available Margin Capital",
+      step5Sub: "BusinessBuddy AI will now calculate demographic reach, competitor price benchmarks, and financial metrics.",
+      generateBtn: "Generate Feasibility Report →",
+      radiusSub: "Define your market territory for demographic and competitor analysis:",
+      customRadiusLabel: "Custom Radius:"
+    },
+    report: {
+      eyebrow: "Business Feasibility Assessment",
+      overallScore: "Mathematical Feasibility Index",
+      sec1: "1. Market Territory & Geographic Reach",
+      sec2: "2. Calculated Business Opportunity",
+      sec3: "3. Competitor Benchmarking",
+      sec4: "4. SWOT Matrix",
+      sec5: "5. Risk Assessment & Mitigation",
+      sec6: "6. Unit Economics & Pricing",
+      popReach: "Total Population Reach",
+      estHouseholds: "Estimated Households",
+      targetHouseholds: "Target Buyer Households",
+      activeMarkets: "Local Trading Markets",
+      benchmarkAvg: "Benchmark Market Average",
+      priceRange: "Competitive Price Range",
+      entryPrice: "Recommended Entry Price",
+      nextStepPrompt: "Next Step: Confirm your financing breakdown and subsidy eligibility in the Scheme Calculator.",
+      openSchemeBtn: "Open Scheme Calculator →"
+    },
+    scheme: {
+      eyebrow: "Smart Scheme Calculator",
+      title: "Financing & Subsidy Matching",
+      subtitle: "Enter your available margin capital — BusinessBuddy calculates your project cost, eligible loan, and government scheme.",
+      formulaText: "Formula: Project Cost = Margin Capital ÷ 10% → ",
+      marginBox: "Beneficiary Margin (10%)",
+      loanBox: "Institutional Loan (90%)",
+      totalBox: "Total Project Cost",
+      matchedScheme: "Matched Government Scheme",
+      interestRate: "Interest Rate",
+      tenure: "Repayment Tenure",
+      moratorium: "Grace Moratorium",
+      sanctionedLoan: "Sanctioned Loan",
+      whyScheme: "Why this scheme?",
+      viewRepaymentBtn: "View Repayment Schedule →",
+      refTableTitle: "Scheme Eligibility Reference"
+    },
+    ai: {
+      welcome: "Namaste! I am BusinessBuddy AI. How can I assist you with your venture planning today?",
+      headerTitle: "BusinessBuddy AI",
+      headerSub: "Enterprise Advisory Assistant",
+      inputPlaceholder: "Type your advisory question...",
+      sendBtn: "Send"
+    }
+  },
+  hi: {
+    name: "हिन्दी",
+    tagline: "उद्यम सलाहकार एवं व्यवहार्यता विश्लेषण मंच",
+    nav: {
+      dashboard: "डैशबोर्ड",
+      assessment: "व्यवसाय मूल्यांकन",
+      market: "स्थानीय बाज़ार",
+      report: "व्यवहार्यता रिपोर्ट",
+      scheme: "योजना कैलकुलेटर",
+      emi: "ईएमआई कैलकुलेटर",
+      repayment: "पुनर्भुगतान योजना",
+      plan: "व्यवसाय योजना",
+      ai: "बिजनेस बडी AI",
+      profile: "मेरी प्रोफ़ाइल",
+      settings: "सेटिंग्स",
+      logout: "लॉगआउट",
+      home: "होम",
+      assess: "मूल्यांकन",
+      reportShort: "रिपोर्ट",
+      emiShort: "ईएमआई",
+      planShort: "योजना"
+    },
+    common: {
+      location: "स्थान",
+      state: "राज्य",
+      district: "ज़िला",
+      village: "गाँव / कस्बा",
+      pinCode: "पिन कोड",
+      marginCapital: "उपलब्ध मार्जिन पूँजी",
+      projectCost: "अनुमानित परियोजना लागत",
+      loanAmount: "पात्र ऋण राशि",
+      radius: "कवरेज दायरा (रेडियस)",
+      km: "किमी",
+      next: "आगे बढ़ें →",
+      back: "← पीछे",
+      save: "परिवर्तन सहेजें",
+      login: "लॉग इन",
+      logout: "लॉग आउट",
+      register: "पंजीकरण करें",
+      guest: "अतिथि मोड",
+      instant: "तुरंत मूल्यांकन",
+      useCurrentLocation: "📍 वर्तमान स्थान का उपयोग करें",
+      detectingLocation: "⏳ स्थान खोजा जा रहा है…",
+      locationUpdated: "📍 स्थान अपडेट हुआ!",
+      month: "माह",
+      year: "वर्ष",
+      pa: "वार्षिक",
+      rupee: "₹",
+      currency: "₹",
+      custom: "कस्टम",
+      all: "सभी",
+      step: "चरण",
+      recommended: "अनुशंसित",
+      expandMap: "⛶ मानचित्र बड़ा करें",
+      collapseMap: "🗕 मानचित्र समेटें"
+    },
+    categories: {
+      'Dairy & Livestock': "डेरी एवं पशुपालन",
+      'Agriculture & Food Processing': "कृषि एवं खाद्य प्रसंस्करण",
+      'Retail': "खुदरा एवं किराना व्यापार",
+      'Textiles & Handicrafts': "वस्त्र एवं हस्तशिल्प",
+      'Fisheries': "मत्स्य पालन एवं जलकृषि",
+      'Food & Catering': "खान-पान एवं कैटरिंग",
+      'Repair & Services': "मरम्मत एवं सेवाएं",
+      'Transport & Logistics': "परिवहन एवं लॉजिस्टिक्स",
+      'Digital Services': "डिजिटल सेवाएं (CSC/ऑनलाइन)",
+      'Other': "अन्य उद्यम"
+    },
+    hero: {
+      eyebrow: "स्मार्ट इंडिया हैकाथॉन 2026 · सॉफ्टवेयर प्रॉब्लम 91",
+      title: "स्थानीय सोचें। स्मार्ट योजना बनाएं।<br><span>BusinessBuddy</span> के साथ आगे बढ़ें",
+      subtitle: "सूक्ष्म उद्यमियों के लिए एक सरल सलाहकार मंच। अपने वास्तविक भौगोलिक दायरे, प्रतिस्पर्धी मूल्य और सरकारी वित्तीय योजनाओं का सटीक मूल्यांकन करें।",
+      startBtn: "⚡ तुरंत मूल्यांकन शुरू करें (बिना साइन इन)",
+      demoBtn: "डेमो खाता आज़माएं",
+      jMargin: "उपलब्ध मार्जिन पूँजी",
+      jCost: "परियोजना लागत (10% नियम)",
+      jLoan: "पात्र संस्थागत ऋण",
+      jScheme: "टर्म लोन योजना · 8% वार्षिक · 7 वर्ष",
+      jReport: "मानचित्र एवं सत्यापित व्यवहार्यता रिपोर्ट"
+    },
+    features: {
+      f1Title: "सटीक मानचित्र जनसांख्यिकी",
+      f1Desc: "आपके चुने हुए दायरे में ओपनस्ट्रीटमैप पर वास्तविक ग्राहक और बाज़ार विश्लेषण।",
+      f2Title: "सटीक आर्थिक गणना",
+      f2Desc: "प्रत्येक उद्योग वर्ग के लिए मानक इकाई मूल्य और लाभ मार्जिन।",
+      f3Title: "व्यवहार्यता स्कोर मॉडल",
+      f3Desc: "पूँजी पर्याप्तता और बाज़ार घनत्व पर आधारित गणितीय स्कोरिंग।",
+      f4Title: "बिजनेस बडी AI",
+      f4Desc: "उद्यम योजना के लिए बहुभाषी भारतीय भाषा सहायक।"
+    },
+    steps: {
+      eyebrow: "यह कैसे काम करता है",
+      title: "बैंक-तैयार योजना की 4-चरणीय प्रक्रिया",
+      subtitle: "स्थानीय क्षेत्र के चयन से लेकर सरकारी ऋण की स्वीकृति तक।",
+      s1Title: "स्थान एवं पूँजी दर्ज करें",
+      s1Desc: "अपना राज्य, ज़िला, गाँव, पिन कोड और उपलब्ध मार्जिन पूँजी साझा करें।",
+      s2Title: "व्यवसाय क्षेत्र चुनें",
+      s2Desc: "सत्यापित आर्थिक मानकों वाले 10 प्रमुख उद्यम क्षेत्रों में से चुनें।",
+      s3Title: "व्यवहार्यता रिपोर्ट प्राप्त करें",
+      s3Desc: "मानचित्र दायरा, प्रतिस्पर्धी तुलना, SWOT एवं जोखिम प्रबंधन।",
+      s4Title: "ऋण एवं किस्त पुष्टि करें",
+      s4Desc: "सरकारी योजना एवं पूर्ण ईएमआई अमोर्टीज़ेशन तालिका।"
+    },
+    auth: {
+      welcomeTitle: "BusinessBuddy में लॉग इन करें",
+      welcomeSub: "या अतिथि मोड में तुरंत आगे बढ़ें।",
+      tabPassword: "मोबाइल एवं पासवर्ड",
+      tabOtp: "ओटीपी से लॉग इन",
+      mobileLabel: "मोबाइल नंबर",
+      passwordLabel: "पासवर्ड",
+      forgotPassword: "पासवर्ड भूल गए?",
+      sendOtpBtn: "ओटीपी भेजें",
+      guestPrompt: "क्या आप तुरंत व्यवसाय मूल्यांकन शुरू करना चाहते हैं?",
+      guestBtn: "⚡ बिना साइन इन किए मूल्यांकन शुरू करें",
+      newToApp: "BusinessBuddy पर नए हैं?",
+      createAccount: "नया खाता बनाएं",
+      demoLabel: "एक-क्लिक डेमो एक्सेस",
+      demoEntrepreneur: "🧑‍🌾 उद्यमी डेमो",
+      demoAdmin: "🛡️ प्रशासक डेमो",
+      verifyTitle: "मोबाइल नंबर सत्यापित करें",
+      verifySub: "आपके पंजीकृत मोबाइल नंबर पर ओटीपी भेजा गया है।",
+      verifyBtn: "सत्यापित करें और आगे बढ़ें",
+      resendOtp: "ओटीपी पुनः भेजें",
+      sideTitle: "सूचित उद्यम योजना के लिए<br>आपका डिजिटल साथी।",
+      sideSub: "अपने सहेजे गए व्यवसाय आकलन, मानचित्र विश्लेषण और ऋण चुकौती तालिकाओं तक पहुँचें।"
+    },
+    dashboard: {
+      welcome: "स्वागत है",
+      guestBadge: "अतिथि",
+      statFeasibility: "व्यवहार्यता स्कोर",
+      statReach: "लक्षित बाज़ार पहुँच",
+      statCost: "अनुमानित परियोजना लागत",
+      statLoan: "पात्र ऋण राशि",
+      activeIdeaTitle: "सक्रिय व्यवसाय विचार",
+      nextMilestoneTitle: "अगला कदम",
+      nextMilestoneDesc: "ऋण आवेदन करने से पहले अपनी व्यवहार्यता रिपोर्ट और इकाई अर्थशास्त्र की समीक्षा करें।",
+      viewReportBtn: "व्यवहार्यता रिपोर्ट देखें",
+      schemeCalcBtn: "योजना कैलकुलेटर",
+      modulesTitle: "वित्तीय योजना मॉड्यूल"
+    },
+    assessment: {
+      title: "व्यवसाय मूल्यांकन",
+      subtitle: "उद्यम मूल्यांकन प्रक्रिया",
+      step1Head: "1. स्थान एवं बाज़ार दायरा",
+      step2Head: "2. उद्यमी प्रोफ़ाइल",
+      step3Head: "3. व्यवसाय क्षेत्र का चयन",
+      step4Head: "4. पूँजी एवं वित्त सत्यापन",
+      step5Head: "5. व्यवहार्यता रिपोर्ट तैयार करें",
+      step2Sub: "उपलब्ध पूँजी और अनुभव विवरण दर्ज करें।",
+      familyMembers: "शामिल परिवार के सदस्य",
+      experience: "पूर्व अनुभव",
+      existingBusiness: "मौजूदा व्यवसाय",
+      describeIdea: "अपने व्यवसाय विचार का संक्षिप्त विवरण दें",
+      describePlaceholder: "उदा. ताज़ा दूध की घर-घर डिलीवरी एवं पनीर/दही की आपूर्ति।",
+      step4Desc: "ग्रामीण उद्यम मानदंडों के तहत आपकी 10% मार्जिन पूँजी 90% ऋण पात्रता अनलॉक करती है।",
+      confirmMargin: "उपलब्ध मार्जिन पूँजी की पुष्टि करें",
+      step5Sub: "BusinessBuddy AI अब जनसांख्यिकी, प्रतिस्पर्धी मूल्य और वित्तीय संकेतकों की गणना करेगा।",
+      generateBtn: "व्यवहार्यता रिपोर्ट तैयार करें →",
+      radiusSub: "जनसांख्यिकी और प्रतिस्पर्धी विश्लेषण के लिए अपना बाज़ार क्षेत्र चुनें:",
+      customRadiusLabel: "कस्टम दायरा:"
+    },
+    report: {
+      eyebrow: "व्यवसाय व्यवहार्यता मूल्यांकन",
+      overallScore: "गणितीय व्यवहार्यता सूचकांक",
+      sec1: "1. बाज़ार क्षेत्र एवं भौगोलिक पहुँच",
+      sec2: "2. आकलित व्यावसायिक अवसर",
+      sec3: "3. प्रतिस्पर्धी बेंचमार्किंग",
+      sec4: "4. SWOT मैट्रिक्स",
+      sec5: "5. जोखिम मूल्यांकन एवं निवारण",
+      sec6: "6. इकाई अर्थशास्त्र एवं मूल्य निर्धारण",
+      popReach: "कुल जनसंख्या पहुँच",
+      estHouseholds: "अनुमानित परिवार (घर)",
+      targetHouseholds: "लक्षित खरीदार परिवार",
+      activeMarkets: "स्थानीय व्यापारिक बाज़ार/हाट",
+      benchmarkAvg: "बाज़ार औसत मूल्य",
+      priceRange: "प्रतिस्पर्धी मूल्य सीमा",
+      entryPrice: "अनुशंसित प्रारंभिक मूल्य",
+      nextStepPrompt: "अगला कदम: योजना कैलकुलेटर में अपना वित्तपोषण और सब्सिडी विवरण देखें।",
+      openSchemeBtn: "योजना कैलकुलेटर खोलें →"
+    },
+    scheme: {
+      eyebrow: "स्मार्ट योजना कैलकुलेटर",
+      title: "वित्तपोषण एवं सब्सिडी मिलान",
+      subtitle: "अपनी उपलब्ध मार्जिन पूँजी दर्ज करें — BusinessBuddy परियोजना लागत, ऋण और उपयुक्त योजना की गणना करेगा।",
+      formulaText: "सूत्र: परियोजना लागत = मार्जिन पूँजी ÷ 10% → ",
+      marginBox: "लाभार्थी मार्जिन (10%)",
+      loanBox: "संस्थागत ऋण (90%)",
+      totalBox: "कुल परियोजना लागत",
+      matchedScheme: "सुझाई गई सरकारी योजना",
+      interestRate: "ब्याज दर",
+      tenure: "ऋण अवधि",
+      moratorium: "रियायती अवधि (ग्रेस)",
+      sanctionedLoan: "स्वीकृत ऋण",
+      whyScheme: "यह योजना क्यों?",
+      viewRepaymentBtn: "पुनर्भुगतान अनुसूची देखें →",
+      refTableTitle: "सरकारी योजना संदर्भ तालिका"
+    },
+    ai: {
+      welcome: "नमस्ते! मैं बिजनेस बडी AI हूँ। मैं आज आपकी उद्यम योजना में कैसे मदद कर सकता हूँ?",
+      headerTitle: "बिजनेस बडी AI",
+      headerSub: "उद्यम सलाहकार सहायक",
+      inputPlaceholder: "अपना प्रश्न यहाँ टाइप करें...",
+      sendBtn: "भेजें"
+    }
+  },
+  as: {
+    name: "অসমীয়া",
+    tagline: "উদ্যোগ পৰামৰ্শ আৰু সম্ভাৱ্যতা বিশ্লেষণ প্লেটফৰ্ম",
+    nav: {
+      dashboard: "ডেশ্ববৰ্ড",
+      assessment: "ব্যৱসায় মূল্যায়ন",
+      market: "স্থানীয় বজাৰ",
+      report: "সম্ভাৱ্যতা প্ৰতিবেদন",
+      scheme: "আঁচনি কেলকুলেটৰ",
+      emi: "ইএমআই কেলকুলেটৰ",
+      repayment: "পৰিশোধ পৰিকল্পনা",
+      plan: "ব্যৱসায় পৰিকল্পনা",
+      ai: "BusinessBuddy AI",
+      profile: "মোৰ প্ৰ'ফাইল",
+      settings: "ছেটিংছ",
+      logout: "লগআউট",
+      home: "গৃহ",
+      assess: "মূল্যায়ন",
+      reportShort: "প্ৰতিবেদন",
+      emiShort: "ইএমআই",
+      planShort: "পৰিকল্পনা"
+    },
+    common: {
+      location: "স্থান",
+      state: "ৰাজ্য",
+      district: "জিলা",
+      village: "গাঁও / নগৰ",
+      pinCode: "পিন কোড",
+      marginCapital: "উপলব্ধ মূলধন (মাৰ্জিন)",
+      projectCost: "প্ৰকল্পৰ আনুমানিক ব্যয়",
+      loanAmount: "যোগ্য ঋণৰ পৰিমাণ",
+      radius: "কভাৰেজ পৰিসীমা",
+      km: "কিঃমিঃ",
+      next: "পৰৱৰ্তী →",
+      back: "← পূৰ্বৱৰ্তী",
+      save: "সংৰক্ষণ কৰক",
+      login: "লগ ইন",
+      logout: "লগআউট",
+      register: "পঞ্জীয়ন কৰক",
+      guest: "অতিথি ম'ড",
+      instant: "ক্ষিপ্ৰ মূল্যায়ন",
+      useCurrentLocation: "📍 বৰ্তমান স্থান ব্যৱহাৰ কৰক",
+      detectingLocation: "⏳ স্থান বিচৰা হৈছে…",
+      locationUpdated: "📍 স্থান চিনাক্ত হ'ল!",
+      month: "মাহ",
+      year: "বছৰ",
+      pa: "বাৰ্ষিক",
+      rupee: "₹",
+      currency: "₹",
+      custom: "কাষ্টম",
+      all: "সকলো",
+      step: "পদক্ষেপ",
+      recommended: "পৰামৰ্শিত",
+      expandMap: "⛶ মানচিত্ৰ ডাঙৰ কৰক",
+      collapseMap: "🗕 মানচিত্ৰ সংকুচিত কৰক"
+    },
+    categories: {
+      'Dairy & Livestock': "দুগ্ধ আৰু পশুপালন",
+      'Agriculture & Food Processing': "কৃষি আৰু খাদ্য প্ৰক্ৰিয়াকৰণ",
+      'Retail': "খুচুৰা আৰু গেলামাল ব্যৱসায়",
+      'Textiles & Handicrafts': "বস্ত্ৰ আৰু হস্তশিল্প",
+      'Fisheries': "মীন পালন আৰু জলকৃষি",
+      'Food & Catering': "খাদ্য আৰু কেটাৰিং সেৱা",
+      'Repair & Services': "মেৰামতি আৰু কাৰিকৰী সেৱা",
+      'Transport & Logistics': "পৰিবহণ আৰু লজিষ্টিকছ",
+      'Digital Services': "ডিজিটেল সেৱা (CSC/অনলাইন)",
+      'Other': "অন্যান্য উদ্যোগ"
+    },
+    hero: {
+      eyebrow: "স্মাৰ্ট ইণ্ডিয়া হেকাথন ২০২৬ · ছফ্টৱেৰ সমস্যা ৯১",
+      title: "স্থানীয়ভাৱে ভাবক। স্মাৰ্ট পৰিকল্পনা কৰক।<br><span>BusinessBuddy</span> ৰ সৈতে আগবাঢ়ক",
+      subtitle: "ক্ষুদ্ৰ উদ্যোগীসকলৰ বাবে এক আধুনিক পৰামৰ্শ মঞ্চ। আপোনাৰ ভৌগোলিক পৰিসীমা, প্ৰতিযোগিতামূলক মূল্য আৰু চৰকাৰী বিত্তীয় সাহায্যৰ সঠিক মূল্যায়ন কৰক।",
+      startBtn: "⚡ ক্ষিপ্ৰ মূল্যায়ন আৰম্ভ কৰক (বিনা ছাইন ইন)",
+      demoBtn: "ডেমো একাউণ্ট চাওক",
+      jMargin: "উপলব্ধ মূলধন (মাৰ্জিন)",
+      jCost: "প্ৰকল্প ব্যয় (১০% নিয়ম)",
+      jLoan: "যোগ্য প্ৰতিষ্ঠানিক ঋণ",
+      jScheme: "টাৰ্ম লোন আঁচনি · ৮% বাৰ্ষিক · ৭ বছৰ",
+      jReport: "মানচিত্ৰ আৰু প্ৰকৃত সম্ভাৱ্যতা প্ৰতিবেদন"
+    },
+    features: {
+      f1Title: "প্ৰকৃত মানচিত্ৰ বিশ্লেষণ",
+      f1Desc: "আপোনাৰ নিৰ্বাচিত পৰিসীমাৰ ভিতৰত গ্ৰাহক আৰু বজাৰৰ সঠিক মানচিত্ৰায়ন।",
+      f2Title: "গণনাকৃত অৰ্থনীতি",
+      f2Desc: "প্ৰতিটো উদ্যোগ শ্ৰেণীৰ বাবে মানক মূল্য আৰু লাভৰ মাৰ্জিন।",
+      f3Title: "সম্ভাৱ্যতা স্ক'ৰ মডেন্স",
+      f3Desc: "মূলধন পৰ্যাপ্ততা আৰু বজাৰ ঘনত্বৰ ভিত্তিত গাণিতিক স্ক'ৰিং।",
+      f4Title: "BusinessBuddy AI",
+      f4Desc: "উদ্যোগ পৰিকল্পনাৰ বাবে বহুভাষিক অসমীয়া এআই সহায়ক।"
+    },
+    steps: {
+      eyebrow: "কাৰ্যপ্ৰণালী",
+      title: "বেংক-প্ৰস্তুত পৰিকল্পনাৰ ৪টা সহজ পদক্ষেপ",
+      subtitle: "স্থানীয় অঞ্চল নিৰ্ধাৰণৰ পৰা চৰকাৰী ঋণ অনুমোদনলৈ।",
+      s1Title: "স্থান আৰু মূলধন দিয়ক",
+      s1Desc: "আপোনাৰ ৰাজ্য, জিলা, গাঁও, পিন কোড আৰু উপলব্ধ মূলধন জনাওক।",
+      s2Title: "উদ্যোগ শ্ৰেণী বাছক",
+      s2Desc: "১০টা প্ৰধান উদ্যোগ খণ্ডৰ ভিতৰৰ পৰা বাছনি কৰক।",
+      s3Title: "সম্ভাৱ্যতা প্ৰতিবেদন চাওক",
+      s3Desc: "মানচিত্ৰ পৰিসীমা, প্ৰতিযোগীৰ তথ্য, SWOT আৰু সম্ভাৱ্য বিপদ ব্যৱস্থাপনা।",
+      s4Title: "ঋণ আৰু কিস্তি নিশ্চিত কৰক",
+      s4Desc: "চৰকাৰী আঁচনি আৰু সম্পূৰ্ণ ইএমআই কিস্তি তালিকা।"
+    },
+    auth: {
+      welcomeTitle: "BusinessBuddy লৈ স্বাগতম",
+      welcomeSub: "বা অতিথি ম'ডত তৎক্ষণাৎ আগবাঢ়ক।",
+      tabPassword: "মোবাইল আৰু পাছৱৰ্ড",
+      tabOtp: "অ'টিপিৰে লগ ইন",
+      mobileLabel: "মোবাইল নম্বৰ",
+      passwordLabel: "পাছৱৰ্ড",
+      forgotPassword: "পাছৱৰ্ড পাহৰিলে?",
+      sendOtpBtn: "অ'টিপি পঠিয়াওক",
+      guestPrompt: "আপুনি তৎক্ষণাৎ ব্যৱসায় মূল্যায়ন আৰম্ভ কৰিব বিচাৰে নেকি?",
+      guestBtn: "⚡ ছাইন ইন নকৰাকৈ আৰম্ভ কৰক",
+      newToApp: "BusinessBuddy ত নতুন নেকি?",
+      createAccount: "নতুন একাউণ্ট খোলক",
+      demoLabel: "ডেমো প্ৰৱেশাধিকাৰ",
+      demoEntrepreneur: "🧑‍🌾 উদ্যোগী ডেমো",
+      demoAdmin: "🛡️ প্ৰশাসক ডেমো",
+      verifyTitle: "মোবাইল নম্বৰ সত্যাসত্য নিৰূপণ",
+      verifySub: "আপোনাৰ পঞ্জীভুক্ত মোবাইললৈ এটা অ'টিপি প্ৰেৰণ কৰা হৈছে।",
+      verifyBtn: "সত্যাপন কৰক আৰু আগবাঢ়ক",
+      resendOtp: "অ'টিপি পুনৰ পঠিয়াওক",
+      sideTitle: "সচেতন উদ্যোগ পৰিকল্পনাৰ<br>বাবে আপোনাৰ ডিজিটেল সংগী।",
+      sideSub: "আপোনাৰ সংৰক্ষিত ব্যৱসায়িক মূল্যায়ন আৰু ঋণ পৰিশোধ পৰিকল্পনা চাওক।"
+    },
+    dashboard: {
+      welcome: "স্বাগতম",
+      guestBadge: "অতিথি",
+      statFeasibility: "সম্ভাৱ্যতা স্ক'ৰ",
+      statReach: "বজাৰ গ্ৰাহক সংখ্যা",
+      statCost: "প্ৰকল্পৰ আনুমানিক ব্যয়",
+      statLoan: "যোগ্য ঋণৰ পৰিমাণ",
+      activeIdeaTitle: "সক্ৰিয় ব্যৱসায়িক পৰিকল্পনা",
+      nextMilestoneTitle: "পৰৱৰ্তী পদক্ষেপ",
+      nextMilestoneDesc: "ঋণৰ বাবে আবেদন কৰাৰ পূৰ্বে সম্ভাৱ্যতা প্ৰতিবেদন আৰু অৰ্থনীতি পৰীক্ষা কৰক।",
+      viewReportBtn: "সম্ভাৱ্যতা প্ৰতিবেদন চাওক",
+      schemeCalcBtn: "আঁচনি কেলকুলেটৰ",
+      modulesTitle: "বিত্তীয় পৰিকল্পনা মডিউলসমূহ"
+    },
+    assessment: {
+      title: "ব্যৱসায় মূল্যায়ন",
+      subtitle: "উদ্যোগ মূল্যায়ন প্ৰক্ৰিয়া",
+      step1Head: "১. স্থান আৰু বজাৰ পৰিসীমা",
+      step2Head: "২. উদ্যোগীৰ তথ্য",
+      step3Head: "৩. উদ্যোগ খণ্ড বাছনি",
+      step4Head: "৪. মূলধন আৰু বিত্ত নিশ্চিতকৰণ",
+      step5Head: "৫. সম্ভাৱ্যতা প্ৰতিবেদন প্ৰস্তুতি",
+      step2Sub: "মূলধন আৰু পূৰ্ব অভিজ্ঞতাৰ তথ্য দিয়ক।",
+      familyMembers: "জড়িত পৰিয়ালৰ সদস্য",
+      experience: "পূৰ্ব অভিজ্ঞতা",
+      existingBusiness: "বৰ্তমানৰ ব্যৱসায়",
+      describeIdea: "আপোনাৰ ব্যৱসায়িক ধাৰণাৰ চমু বিৱৰণ দিয়ক",
+      describePlaceholder: "উদাহৰণস্বৰূপে: ঘৰে ঘৰে বিশুদ্ধ গাখীৰ আৰু দৈ যোগান।",
+      step4Desc: "নিয়মাৱলী অনুসৰি আপোনাৰ ১০% মাৰ্জিন মূলধনে ৯০% ঋণৰ যোগ্যতা প্ৰদান কৰে।",
+      confirmMargin: "উপলব্ধ মূলধনৰ পৰিমাণ নিশ্চিত কৰক",
+      step5Sub: "BusinessBuddy AI য়ে এতিয়া জনসাংখ্যিক বিস্তাৰ, প্ৰতিযোগীৰ মূল্য আৰু বিত্তীয় সম্ভাৱনা গণনা কৰিব।",
+      generateBtn: "সম্ভাৱ্যতা প্ৰতিবেদন প্ৰস্তুত কৰক →",
+      radiusSub: "জনসাংখ্যিক আৰু বজাৰ বিশ্লেষণৰ বাবে পৰিসীমা নিৰ্ধাৰণ কৰক:",
+      customRadiusLabel: "কাষ্টম পৰিসীমা:"
+    },
+    report: {
+      eyebrow: "ব্যৱসায় সম্ভাৱ্যতা মূল্যায়ন",
+      overallScore: "গাণিতিক সম্ভাৱ্যতা সূচক",
+      sec1: "১. বজাৰ পৰিসীমা আৰু ভৌগোলিক বিস্তাৰ",
+      sec2: "২. গণনাকৃত ব্যৱসায়িক সুযোগ",
+      sec3: "৩. প্ৰতিযোগীৰ বিশ্লেষণ",
+      sec4: "৪. SWOT মেট্ৰিক্স",
+      sec5: "৫. সম্ভাৱ্য বিপদ আৰু প্ৰশমন",
+      sec6: "৬. একক অৰ্থনীতি আৰু মূল্য নিৰ্ধাৰণ",
+      popReach: "মুঠ জনসংখ্যা বিস্তাৰ",
+      estHouseholds: "আনুমানিক পৰিয়াল সংখ্যা",
+      targetHouseholds: "লক্ষিত ক্ৰেতা পৰিয়াল",
+      activeMarkets: "স্থানীয় সাপ্তাহিক বজাৰ/হাট",
+      benchmarkAvg: "বজাৰৰ গড় মূল্য",
+      priceRange: "প্ৰতিযোগিতামূলক মূল্য পৰিসৰ",
+      entryPrice: "পৰামৰ্শিত আৰম্ভণি মূল্য",
+      nextStepPrompt: "পৰৱৰ্তী পদক্ষেপ: আঁচনি কেলকুলেটৰত চৰকাৰী সাহায্য আৰু ঋণৰ তথ্য চাওক।",
+      openSchemeBtn: "আঁচনি কেলকুলেটৰ খোলক →"
+    },
+    scheme: {
+      eyebrow: "স্মাৰ্ট আঁচনি কেলকুলেটৰ",
+      title: "বিত্তীয় সাহায্য আৰু আঁচনি নিৰ্ধাৰণ",
+      subtitle: "আপোনাৰ মূলধন দিয়ক — BusinessBuddy য়ে প্ৰকল্প ব্যয়, ঋণ আৰু উপযুক্ত চৰকাৰী আঁচনি গণনা কৰিব।",
+      formulaText: "সূত্ৰ: প্ৰকল্প ব্যয় = মাৰ্জিন মূলধন ÷ ১০% → ",
+      marginBox: "হিতাধিকাৰীৰ মূলধন (১০%)",
+      loanBox: "প্ৰতিষ্ঠানিক ঋণ (৯০%)",
+      totalBox: "মুঠ প্ৰকল্প ব্যয়",
+      matchedScheme: "উপযুক্ত চৰকাৰী আঁচনি",
+      interestRate: "সুদৰ হাৰ",
+      tenure: "পৰিশোধৰ সময়সীমা",
+      moratorium: "ৰেহাই সময়সীমা (গ্ৰেচ)",
+      sanctionedLoan: "অনুমোদিত ঋণ",
+      whyScheme: "এই আঁচনি কিয়?",
+      viewRepaymentBtn: "পৰিশোধ তালিকা চাওক →",
+      refTableTitle: "চৰকাৰী আঁচনিৰ তথ্য তালিকা"
+    },
+    ai: {
+      welcome: "নমস্কাৰ! মই BusinessBuddy AI। মই আজি আপোনাৰ উদ্যোগ পৰিকল্পনাত কেনেকৈ সহায় কৰিব পাৰোঁ?",
+      headerTitle: "BusinessBuddy AI",
+      headerSub: "উদ্যোগ পৰামৰ্শদাতা এআই",
+      inputPlaceholder: "আপোনাৰ প্ৰশ্ন ইয়াত লিখক...",
+      sendBtn: "পঠিয়াওক"
+    }
+  }
+};
+
+// Extensible North-East India Language Registry for future scalability
+const NE_LANG_METRICS = {
+  en: { name: "English", nativeName: "English", region: "Pan-India" },
+  hi: { name: "Hindi", nativeName: "हिन्दी", region: "Pan-India" },
+  as: { name: "Assamese", nativeName: "অসমীয়া", region: "Assam" },
+  brx: { name: "Bodo", nativeName: "बर'", region: "Bodoland, Assam" },
+  mni: { name: "Meitei / Manipuri", nativeName: "ꯃꯤꯇꯩꯂꯣꯟ", region: "Manipur" },
+  kha: { name: "Khasi", nativeName: "Ka Ktien Khasi", region: "Meghalaya" },
+  lus: { name: "Mizo", nativeName: "Mizo ṭawng", region: "Mizoram" },
+  grt: { name: "Garo", nativeName: "A·chik", region: "Meghalaya" },
+  nag: { name: "Nagamese", nativeName: "Nagamese", region: "Nagaland" }
+};
+
+function t(path, fallback) {
+  const keys = path.split('.');
+  let val = I18N[state.lang];
+  for (const k of keys) {
+    if (val && val[k] !== undefined) {
+      val = val[k];
+    } else {
+      val = null;
+      break;
+    }
+  }
+  if (val !== null && val !== undefined) return val;
+  // Fallback to English
+  let eng = I18N['en'];
+  for (const k of keys) {
+    if (eng && eng[k] !== undefined) eng = eng[k];
+    else return fallback || path;
+  }
+  return eng || fallback || path;
+}
+
+function getCategoryName(catName) {
+  return t('categories.' + catName, catName);
+}
+
+// ============================================================================
+// 2. CATEGORY ECONOMIC BENCHMARKS & DYNAMIC CALCULATION ENGINE
+// ============================================================================
+const CATEGORY_MODELS = {
+  'Dairy & Livestock': {
+    name: 'Dairy & Livestock',
+    unitName: 'Liter of Milk & Value-Added Products',
+    unitShort: 'Liter',
+    avgPrice: 58,
+    priceMin: 54,
+    priceMax: 64,
+    targetPenetration: 0.28,
+    operatingMargin: 0.24,
+    minViableCapital: 50000,
+    baseOpportunity: 'High recurring demand for doorstep fresh milk, paneer, and curd across local residential clusters.',
+    opportunityPoints: [
+      'High recurring daily household demand with fast cash conversion cycle',
+      'Under-served cold-chain infrastructure creates immediate local price advantage',
+      'Accessible livestock feed and veterinary services within sub-district radius',
+      'Opportunity for value-addition (curd, paneer, butter) yielding 35%+ margins'
+    ],
+    competitors: [
+      { name: 'Local Unorganized Milkman', distRatio: 0.25, priceOffset: -3, strength: 'Low', gap: 'Inconsistent delivery timing & unpasteurized supply' },
+      { name: 'Village Cooperative Dairy Booth', distRatio: 0.45, priceOffset: -4, strength: 'Medium', gap: 'Fixed early-morning only operating window' },
+      { name: 'Private Packaged Milk Distributor', distRatio: 0.85, priceOffset: +5, strength: 'High', gap: 'High retail markup with 24-48h old packaged supply' },
+      { name: 'Town Sweet & Ghee Supplier', distRatio: 0.65, priceOffset: +2, strength: 'Medium', gap: 'Wholesale-only focus, neglects direct households' },
+      { name: 'Sub-district Farmgate Collector', distRatio: 0.70, priceOffset: -2, strength: 'Low', gap: 'Bulk purchase at depressed farmgate rates' }
+    ],
+    swot: {
+      s: ['Direct access to residential consumers', 'Minimal middleman margin loss', 'Family workforce integration'],
+      w: ['Initial working capital needed for feed buffer', 'Perishable product requiring timely daily delivery'],
+      o: ['Subscription-based daily milk supply with UPI auto-pay', 'High-margin festival season demand for curd & paneer'],
+      t: ['Seasonal cattle fodder price spikes', 'Local disease outbreaks without preventive vaccination']
+    },
+    risks: [
+      { level: 'high', title: 'Fodder and Feed Cost Inflation', mit: 'Maintain 30-day buffer inventory and contract with 2 local grain mills.' },
+      { level: 'med', title: 'Milk Spoilage in Summer', mit: 'Invest in insulated mini-chillers and prioritize early-morning distribution.' },
+      { level: 'med', title: 'Single-Buyer Over-Reliance', mit: 'Diversify customer base across retail households, tea stalls, and sweet shops.' },
+      { level: 'low', title: 'Livestock Health Vulnerability', mit: 'Tie up with the local block veterinary dispensary for scheduled vaccination.' }
+    ]
+  },
+  'Agriculture & Food Processing': {
+    name: 'Agriculture & Food Processing',
+    unitName: 'Packaged Unit / Kg of Processed Produce',
+    unitShort: 'Pack/Kg',
+    avgPrice: 120,
+    priceMin: 105,
+    priceMax: 145,
+    targetPenetration: 0.22,
+    operatingMargin: 0.28,
+    minViableCapital: 75000,
+    baseOpportunity: 'Processing raw agricultural harvests (spices, flour, oil, pickles) into branded, value-added retail packs.',
+    opportunityPoints: [
+      'Captures value-addition margin currently lost to distant urban aggregators',
+      'Abundant seasonal raw produce at low harvest farmgate costs',
+      'Growing regional demand for pure, unadulterated food products',
+      'Eligible for substantial machinery subsidies under PMFME & AIF schemes'
+    ],
+    competitors: [
+      { name: 'Traditional Village Atta/Oil Chaki', distRatio: 0.30, priceOffset: -12, strength: 'Medium', gap: 'Crude bulk grinding with unsealed packaging' },
+      { name: 'Regional Wholesale Food Trader', distRatio: 0.75, priceOffset: -5, strength: 'High', gap: 'High distributor markups and impersonal service' },
+      { name: 'Commercial Packaged Brand', distRatio: 0.90, priceOffset: +25, strength: 'High', gap: 'Expensive urban branding without localized trust' },
+      { name: 'Weekly Haat Spice Vendor', distRatio: 0.40, priceOffset: -15, strength: 'Low', gap: 'Only available once a week with no quality standardization' },
+      { name: 'Neighbouring Block Processing Unit', distRatio: 0.60, priceOffset: +5, strength: 'Medium', gap: 'High logistics cost transporting to your cluster' }
+    ],
+    swot: {
+      s: ['Direct proximity to raw crop produce', 'Lower warehousing and processing overhead', 'High local brand authenticity'],
+      w: ['Seasonal cash lock-in during harvest procurement', 'Initial FSSAI packaging & licensing setup'],
+      o: ['Tie-ups with local kirana stores and school mid-day meal kitchens', 'E-commerce listing of regional specialty items'],
+      t: ['Monsoon yield variations affecting raw crop supply', 'Volatile commodity prices']
+    },
+    risks: [
+      { level: 'high', title: 'Raw Harvest Price Volatility', mit: 'Sign pre-harvest supply pacts with 4-5 local farmer grower groups.' },
+      { level: 'med', title: 'Moisture & Storage Spoilage', mit: 'Equip processing sheds with hermetic storage bags and raised pallets.' },
+      { level: 'med', title: 'Retail Credit Delays', mit: 'Enforce strict 7-day revolving credit limits with local retailer accounts.' },
+      { level: 'low', title: 'Machinery Downtime', mit: 'Keep basic spare belts/blades in stock and train operators in routine maintenance.' }
+    ]
+  },
+  'Retail': {
+    name: 'Retail',
+    unitName: 'Average Customer Basket / Transaction',
+    unitShort: 'Basket',
+    avgPrice: 240,
+    priceMin: 180,
+    priceMax: 320,
+    targetPenetration: 0.35,
+    operatingMargin: 0.18,
+    minViableCapital: 40000,
+    baseOpportunity: 'Modern convenience retail store offering essential groceries, packaged goods, and household commodities.',
+    opportunityPoints: [
+      'Daily essential footfall with high customer repeat frequency',
+      'Opportunity to introduce digital billing and doorstep ordering',
+      'Direct wholesale sourcing reduces purchasing costs by 8-12%',
+      'Ability to offer supplementary services (mobile recharge, micro-banking)'
+    ],
+    competitors: [
+      { name: 'Corner Traditional Kirana', distRatio: 0.20, priceOffset: -5, strength: 'Medium', gap: 'Limited SKU inventory and poor store lighting' },
+      { name: 'Village General Store', distRatio: 0.35, priceOffset: +8, strength: 'Low', gap: 'Frequent stockouts and no digital payment option' },
+      { name: 'Semi-Urban Mini Supermarket', distRatio: 0.85, priceOffset: +20, strength: 'High', gap: 'Distance requires customer travel cost and time' },
+      { name: 'Weekly Market Commodity Stall', distRatio: 0.45, priceOffset: -12, strength: 'Medium', gap: 'Temporary stalls without after-sales exchange' },
+      { name: 'Wholesale-cum-Retail Outlet', distRatio: 0.70, priceOffset: -8, strength: 'Medium', gap: 'High minimum purchase quantities required' }
+    ],
+    swot: {
+      s: ['Central walkable village location', 'Strong personal relationships with local households', 'Flexible product assortment'],
+      w: ['Working capital tied up in inventory shelf life', 'Space constraints in initial storefront'],
+      o: ['WhatsApp catalogue ordering for doorstep delivery', 'Fast-moving FMCG distributor direct tie-ups'],
+      t: ['Aggressive credit demands from neighbourhood customers', 'Price competition from semi-urban discounters']
+    },
+    risks: [
+      { level: 'high', title: 'Uncontrolled Customer Credit Default', mit: 'Implement digital ledger app (Khata) with strict ₹500 credit caps.' },
+      { level: 'med', title: 'Slow-Moving Stock Expiry', mit: 'Maintain 14-day stock cycles and run discount clearances on near-expiry goods.' },
+      { level: 'low', title: 'Theft or Inventory Shrinkage', mit: 'Install basic CCTV camera and conduct weekly inventory tallying.' }
+    ]
+  },
+  'Textiles & Handicrafts': {
+    name: 'Textiles & Handicrafts',
+    unitName: 'Finished Garment / Handcrafted Piece',
+    unitShort: 'Piece',
+    avgPrice: 450,
+    priceMin: 350,
+    priceMax: 650,
+    targetPenetration: 0.12,
+    operatingMargin: 0.35,
+    minViableCapital: 35000,
+    baseOpportunity: 'Handloom textiles, customized tailoring, and authentic regional handicraft production.',
+    opportunityPoints: [
+      'High gross margins (35-45%) on customized and festive apparel',
+      'Rich local artisan skills available at competitive operational costs',
+      'Surging demand for authentic traditional weaves and sustainable fabrics',
+      'Low electricity and utility footprint per production cycle'
+    ],
+    competitors: [
+      { name: 'Local Home-based Tailor', distRatio: 0.25, priceOffset: -40, strength: 'Low', gap: 'Basic alteration only, no fabric inventory or ready designs' },
+      { name: 'Town Readymade Garment Store', distRatio: 0.80, priceOffset: +80, strength: 'High', gap: 'Mass synthetic fabrics without customized fitting' },
+      { name: 'Handloom Cooperative Society', distRatio: 0.50, priceOffset: -15, strength: 'Medium', gap: 'Slow production cycles and outdated design patterns' },
+      { name: 'Weekly Haat Cloth Merchant', distRatio: 0.40, priceOffset: -50, strength: 'Low', gap: 'Inferior dye fastness and unstitched raw rolls' },
+      { name: 'Regional Apparel Boutique', distRatio: 0.90, priceOffset: +150, strength: 'High', gap: 'Exorbitant pricing targeted exclusively at wealthy buyers' }
+    ],
+    swot: {
+      s: ['Unique traditional design knowledge', 'Custom sizing and on-demand alterations', 'Low initial machinery cost'],
+      w: ['Longer production cycle per artisan unit', 'Dependence on external yarn/fabric suppliers'],
+      o: ['School/institutional uniform supply contracts', 'Social media marketing & direct festive exhibition sales'],
+      t: ['Cheap powerloom synthetic imports', 'Shifting youth fashion preferences']
+    },
+    risks: [
+      { level: 'med', title: 'Yarn & Fabric Price Spikes', mit: 'Procure core fabric rolls in bulk directly from wholesale textile hubs.' },
+      { level: 'high', title: 'Seasonal Demand Lulls', mit: 'Balance custom festive tailoring with steady school uniform & workwear orders.' },
+      { level: 'low', title: 'Worker Skill Retention', mit: 'Offer piece-rate incentives and structured skill upgrading workshops.' }
+    ]
+  },
+  'Fisheries': {
+    name: 'Fisheries',
+    unitName: 'Kg of Fresh Catch / Processed Fish',
+    unitShort: 'Kg',
+    avgPrice: 220,
+    priceMin: 190,
+    priceMax: 260,
+    targetPenetration: 0.25,
+    operatingMargin: 0.30,
+    minViableCapital: 60000,
+    baseOpportunity: 'Freshwater fish culture, local pond aggregation, and chilled daily fresh fish supply.',
+    opportunityPoints: [
+      'High protein demand with steady daily consumption across rural/semi-urban belts',
+      'Significant price premium for live/fresh catch over preserved iced fish',
+      'Fast growth cycle (4-6 months) for fingerlings with proven feed protocols',
+      'Supported by PMMSY (Pradhan Mantri Matsya Sampada Yojana) subsidies'
+    ],
+    competitors: [
+      { name: 'Local Village Pond Fisher', distRatio: 0.30, priceOffset: -15, strength: 'Low', gap: 'Irregular catch timing and no cold-storage box' },
+      { name: 'Wet Fish Market Wholesaler', distRatio: 0.70, priceOffset: +10, strength: 'High', gap: 'Heavily iced fish from distant coastal areas' },
+      { name: 'Mobile Fish Cart Vendor', distRatio: 0.40, priceOffset: -10, strength: 'Medium', gap: 'Limited species variety and no hygiene certification' },
+      { name: 'Town Specialized Fish Stall', distRatio: 0.85, priceOffset: +30, strength: 'High', gap: 'Distance requires expensive travel for village households' },
+      { name: 'River Catch Casual Fisher', distRatio: 0.50, priceOffset: -20, strength: 'Low', gap: 'Unpredictable seasonal harvest volume' }
+    ],
+    swot: {
+      s: ['Live freshwater harvest freshness', 'Low transportation time to consumption point', 'High daily household demand'],
+      w: ['Water quality monitoring required', 'Risk of oxygen depletion during summer heat'],
+      o: ['Supply agreements with local eateries and wedding caterers', 'Fingerling nursery integration'],
+      t: ['Flooding or water contamination risks', 'Feed price increases']
+    },
+    risks: [
+      { level: 'high', title: 'Pond Oxygen Depletion & Mortality', mit: 'Install basic solar/electric aerators and conduct weekly water testing.' },
+      { level: 'med', title: 'Feed Cost Escalation', mit: 'Supplement commercial floating feed with farm-made oilcake & bran mixtures.' },
+      { level: 'low', title: 'Predation & Theft', mit: 'Erect pond-perimeter netting and maintain nighttime solar lighting.' }
+    ]
+  },
+  'Food & Catering': {
+    name: 'Food & Catering',
+    unitName: 'Meal / Tiffin / Food Order',
+    unitShort: 'Meal/Order',
+    avgPrice: 85,
+    priceMin: 70,
+    priceMax: 110,
+    targetPenetration: 0.20,
+    operatingMargin: 0.32,
+    minViableCapital: 30000,
+    baseOpportunity: 'Home-style tiffin service, hygienic snack corner, and event catering.',
+    opportunityPoints: [
+      'High demand from daily commuters, school teachers, shop workers, and bank staff',
+      'Immediate cash realization with negligible credit exposure',
+      'Low initial infrastructure barrier with high return on kitchen capital',
+      'High catering volume on local community celebrations and gatherings'
+    ],
+    competitors: [
+      { name: 'Roadside Unhygienic Dhaba', distRatio: 0.25, priceOffset: -10, strength: 'Medium', gap: 'Poor cleanliness, repetitive oil use, rough ambiance' },
+      { name: 'Village Tea & Pakora Stall', distRatio: 0.15, priceOffset: -20, strength: 'Low', gap: 'Snacks only, no nutritious lunch/dinner meals' },
+      { name: 'Town Commercial Restaurant', distRatio: 0.80, priceOffset: +45, strength: 'High', gap: 'Expensive menu and distant for everyday lunches' },
+      { name: 'Casual Home Tiffin Provider', distRatio: 0.40, priceOffset: -5, strength: 'Low', gap: 'Limited capacity and no fixed daily menu rotation' },
+      { name: 'Market Fast Food Cart', distRatio: 0.50, priceOffset: +5, strength: 'Medium', gap: 'Processed unhealthy food without nutritional value' }
+    ],
+    swot: {
+      s: ['Hygienic fresh home-style taste', 'Prompt timed delivery to workplaces', 'Low recipe cost using seasonal produce'],
+      w: ['Early morning prep work hours', 'Perishability of unsold cooked food'],
+      o: ['Monthly lunch subscriptions for government & bank staff', 'Bulk snack boxes for school and panchayat events'],
+      t: ['LPG cylinder price volatility', 'Intense roadside snack competition']
+    },
+    risks: [
+      { level: 'high', title: 'Food Wastage from Unpredicted Demand', mit: 'Operate on pre-order subscription basis for lunch meals.' },
+      { level: 'med', title: 'LPG / Cooking Oil Cost Spikes', mit: 'Use commercial efficient induction burners and source oil wholesale.' },
+      { level: 'low', title: 'Hygiene Rating Perception', mit: 'Display FSSAI certificate, clean steel containers, and hairnets.' }
+    ]
+  },
+  'Repair & Services': {
+    name: 'Repair & Services',
+    unitName: 'Service Job / Repair Bill',
+    unitShort: 'Service Job',
+    avgPrice: 320,
+    priceMin: 250,
+    priceMax: 450,
+    targetPenetration: 0.15,
+    operatingMargin: 0.55,
+    minViableCapital: 25000,
+    baseOpportunity: 'Two-wheeler, electrical motor, pump set, and household appliance repair workshop.',
+    opportunityPoints: [
+      'Rapidly rising vehicle and appliance ownership in rural households',
+      'Extremely high gross margins (50-60%) on skilled repair labor',
+      'Recurring servicing demand for agricultural pump sets and motors',
+      'Opportunity to retail replacement spare parts at healthy markups'
+    ],
+    competitors: [
+      { name: 'Informal Village Mechanic', distRatio: 0.25, priceOffset: -40, strength: 'Low', gap: 'Outdated manual tools, slow turnaround, no spare parts' },
+      { name: 'Town Authorized Service Center', distRatio: 0.85, priceOffset: +160, strength: 'High', gap: 'Long waiting periods and steep inspection fees' },
+      { name: 'Motor & Pump Rewinding Shop', distRatio: 0.45, priceOffset: -20, strength: 'Medium', gap: 'Specialized in pumps only, cannot service vehicles' },
+      { name: 'Mobile Repair & Recharge Point', distRatio: 0.35, priceOffset: +30, strength: 'Low', gap: 'Electronics only, no mechanical capacity' },
+      { name: 'Hardware-cum-Repair Counter', distRatio: 0.60, priceOffset: -10, strength: 'Medium', gap: 'Part-time repairman without specialized diagnostic gear' }
+    ],
+    swot: {
+      s: ['High profit margin on labor', 'Essential emergency utility for vehicle owners', 'Low recurring raw material overhead'],
+      w: ['Requires skilled technician hands', 'Initial investment in diagnostic and power tools'],
+      o: ['Annual maintenance contracts with local schools & transport vehicles', 'Direct stocking of fast-moving OEM spares'],
+      t: ['Emergence of complex electronic two-wheelers/EVs', 'Delays in specialty spare parts procurement']
+    },
+    risks: [
+      { level: 'med', title: 'Lack of Specialized Diagnostic Tools', mit: 'Invest in multi-brand digital diagnostic tools and standard battery chargers.' },
+      { level: 'med', title: 'Dead Inventory in Odd Spare Parts', mit: 'Stock only fast-moving parts (plugs, cables, filters, oil); order rest on demand.' },
+      { level: 'low', title: 'Safety Hazards in Workshop', mit: 'Equip workshop with fire extinguishers, safety goggles, and insulated tools.' }
+    ]
+  },
+  'Transport & Logistics': {
+    name: 'Transport & Logistics',
+    unitName: 'Trip / Haulage Job',
+    unitShort: 'Trip',
+    avgPrice: 650,
+    priceMin: 500,
+    priceMax: 950,
+    targetPenetration: 0.10,
+    operatingMargin: 0.25,
+    minViableCapital: 100000,
+    baseOpportunity: 'Mini-truck / cargo auto produce transportation from farms to wholesale markets and local construction delivery.',
+    opportunityPoints: [
+      'Vital lifeline connecting rural farmers to higher-margin mandi trading hubs',
+      'Daily demand for construction material (cement, sand, bricks) delivery',
+      'High vehicle asset utilization through shared return-trip freight',
+      'Financing available with low down-payment under commercial vehicle schemes'
+    ],
+    competitors: [
+      { name: 'Local Mini-truck Driver', distRatio: 0.25, priceOffset: -50, strength: 'Medium', gap: 'Unscheduled availability and frequent refusal of small loads' },
+      { name: 'Tractor Trolley Operator', distRatio: 0.35, priceOffset: -80, strength: 'Medium', gap: 'Slow travel speed, unsuited for perishable fruits/vegetables' },
+      { name: 'Town Commercial Transporter', distRatio: 0.85, priceOffset: +150, strength: 'High', gap: 'High minimum freight charge, unwilling to enter rural interior roads' },
+      { name: 'Local Freight Broker', distRatio: 0.50, priceOffset: +40, strength: 'Low', gap: 'Charges hefty 15% commission on both ends' },
+      { name: 'Casual Shared Auto Carrier', distRatio: 0.30, priceOffset: -100, strength: 'Low', gap: 'Overcrowded and prone to cargo damage' }
+    ],
+    swot: {
+      s: ['Quick responsiveness for urgent harvest transit', 'Direct access to interior village farm roads', 'Trusted driver reputation'],
+      w: ['High fuel and maintenance cash outflow', 'Vehicle EMI commitment'],
+      o: ['Fixed monthly contracts with local wholesale distributors', 'Return-trip freight aggregation to eliminate empty runs'],
+      t: ['Diesel price spikes', 'Strict regional toll and permit regulations']
+    },
+    risks: [
+      { level: 'high', title: 'Diesel Price Volatility', mit: 'Incorporate transparent fuel-indexed pricing for all distance contracts.' },
+      { level: 'med', title: 'Vehicle Breakdown During Transit', mit: 'Maintain regular scheduled servicing and 24/7 roadside assistance tie-up.' },
+      { level: 'low', title: 'Empty Return Mileage Loss', mit: 'Join local WhatsApp transport group to book return cargo loads.' }
+    ]
+  },
+  'Digital Services': {
+    name: 'Digital Services',
+    unitName: 'Service / Form / Transaction',
+    unitShort: 'Transaction',
+    avgPrice: 75,
+    priceMin: 50,
+    priceMax: 140,
+    targetPenetration: 0.30,
+    operatingMargin: 0.60,
+    minViableCapital: 25000,
+    baseOpportunity: 'Common Service Center (CSC), DigiSeva counter, online forms, biometric banking, and print services.',
+    opportunityPoints: [
+      'Extremely high operating margins (60%+) with digital service delivery',
+      'Government welfare schemes (DBT, Ayushman, Aadhaar, PAN) mandate digital filings',
+      'Captive daily footfall of villagers seeking pension withdrawals & certificates',
+      'Low space and electricity requirements with high customer trust'
+    ],
+    competitors: [
+      { name: 'Panchayat CSC Point', distRatio: 0.30, priceOffset: -10, strength: 'Medium', gap: 'Frequent server downtime and irregular counter hours' },
+      { name: 'Town Cyber Cafe', distRatio: 0.85, priceOffset: +25, strength: 'High', gap: 'Distance requires expensive bus trip and full-day loss for villagers' },
+      { name: 'Local Photostat Shop', distRatio: 0.20, priceOffset: -5, strength: 'Low', gap: 'Copying only, no online form filing or banking clearance' },
+      { name: 'Bank Mitra Micro-ATM Point', distRatio: 0.40, priceOffset: 0, strength: 'Medium', gap: 'Cash withdrawal only, no documentation or print services' },
+      { name: 'Mobile Recharge & DTP Stall', distRatio: 0.50, priceOffset: +15, strength: 'Low', gap: 'Limited technical skill in government portal workflows' }
+    ],
+    swot: {
+      s: ['Comprehensive one-stop portal under one roof', 'Clean digital print quality and fast fiber internet', 'High margin on digital transactions'],
+      w: ['Dependence on broadband and power backup', 'Frequent portal system updates require learning'],
+      o: ['Aadhaar biometric micro-ATM cash delivery for elderly', 'Student exam form & job application packages'],
+      t: ['Portal downtime on server peak days', 'Growing smartphone literacy']
+    },
+    risks: [
+      { level: 'high', title: 'Internet / Power Disruption', mit: 'Install inverter battery backup and secondary 4G/5G dual-SIM router.' },
+      { level: 'med', title: 'Cash Shortage for Micro-ATM Withdrawals', mit: 'Maintain ₹50,000 liquid cash float with local partner bank branch.' },
+      { level: 'low', title: 'Equipment / Printer Breakdown', mit: 'Keep backup monochrome printer and spare ink cartridges.' }
+    ]
+  },
+  'Other': {
+    name: 'Other',
+    unitName: 'Service / Product Unit',
+    unitShort: 'Unit',
+    avgPrice: 150,
+    priceMin: 100,
+    priceMax: 250,
+    targetPenetration: 0.20,
+    operatingMargin: 0.30,
+    minViableCapital: 30000,
+    baseOpportunity: 'Locally customized micro-enterprise fulfilling unaddressed community commercial needs.',
+    opportunityPoints: [
+      'Tailored to specific underserved demand in the village cluster',
+      'First-mover advantage in niche local services',
+      'Flexible operational scope allowing rapid pivot based on customer demand',
+      'Eligible for general micro-enterprise government credit schemes'
+    ],
+    competitors: [
+      { name: 'Local Informal Provider', distRatio: 0.30, priceOffset: -15, strength: 'Low', gap: 'Inconsistent availability and lack of proper equipment' },
+      { name: 'Semi-Urban Distributor', distRatio: 0.80, priceOffset: +30, strength: 'High', gap: 'High travel and delivery costs to rural customers' },
+      { name: 'Weekly Haat General Stall', distRatio: 0.45, priceOffset: -10, strength: 'Medium', gap: 'Temporary presence with no ongoing service guarantee' },
+      { name: 'Neighbouring Block Workshop', distRatio: 0.65, priceOffset: +10, strength: 'Medium', gap: 'Logistics delay in servicing orders' },
+      { name: 'Casual Part-time Provider', distRatio: 0.20, priceOffset: -20, strength: 'Low', gap: 'Unreliable turnaround time' }
+    ],
+    swot: {
+      s: ['Direct local customer relationship', 'Low fixed overheads', 'Nimble operation'],
+      w: ['Initial customer education required', 'Working capital management'],
+      o: ['Local enterprise word-of-mouth growth', 'Expansion into neighbouring village clusters'],
+      t: ['Market imitation by new entrants', 'Raw material supply fluctuations']
+    },
+    risks: [
+      { level: 'med', title: 'Customer Acquisition Lag', mit: 'Offer launch incentives and partner with local community influencers.' },
+      { level: 'med', title: 'Working Capital Crunch', mit: 'Maintain 10% cash buffer from initial margin allocation.' },
+      { level: 'low', title: 'Operational Equipment Wear', mit: 'Conduct regular routine preventive maintenance.' }
+    ]
+  }
+};
+
+function getCategoryModel(catName) {
+  return CATEGORY_MODELS[catName] || CATEGORY_MODELS['Other'];
+}
+
+function calculateDynamicFeasibility(marginCapital, categoryName, radiusKm) {
+  const model = getCategoryModel(categoryName);
+  const r = Number(radiusKm) || 5;
+  const margin = Number(marginCapital) || 100000;
+
+  const projectCost = margin / 0.10;
+  const loanReq = projectCost * 0.90;
+
+  const areaSqKm = Math.PI * Math.pow(r, 2);
+  const populationReach = Math.round(areaSqKm * 480);
+  const totalHouseholds = Math.round(populationReach / 4.8);
+  const targetCustomers = Math.round(totalHouseholds * model.targetPenetration);
+  const nearbyMarkets = Math.max(2, Math.round(r * 0.65));
+  const distributionPoints = Math.max(1, Math.round(nearbyMarkets * 0.7));
+
+  const capitalSufficiency = Math.min(1.2, margin / model.minViableCapital);
+  const capitalScore = Math.min(100, Math.round(capitalSufficiency * 82));
+  const reachFactor = Math.min(1.2, r / 7.5);
+  const reachScore = Math.min(100, Math.round(reachFactor * 85));
+  const marginScore = Math.min(100, Math.round(model.operatingMargin * 250));
+
+  let rawScore = (capitalScore * 0.40) + (reachScore * 0.30) + (marginScore * 0.30);
+  const feasibilityScore = Math.min(94, Math.max(62, Math.round(rawScore)));
+
+  let readinessTier = 'Highly Viable & Bank-Ready';
+  let badgeClass = 'badge-green';
+  let statusEmoji = '🟢';
+  if (feasibilityScore < 70) {
+    readinessTier = 'Viable (Requires Working Capital Buffer)';
+    badgeClass = 'badge-blue';
+    statusEmoji = '🟡';
+  } else if (feasibilityScore < 80) {
+    readinessTier = 'Viable with Structured Plan';
+    badgeClass = 'badge-green';
+    statusEmoji = '🟢';
+  }
+
+  const dynamicCompetitors = model.competitors.map(c => {
+    const dist = (r * c.distRatio).toFixed(1);
+    const price = Math.max(10, model.avgPrice + c.priceOffset);
+    return {
+      name: c.name,
+      dist: dist + ' ' + t('common.km'),
+      price: t('common.currency') + price,
+      strength: c.strength,
+      gap: c.gap
+    };
+  });
+
+  const estMonthlyUnits = Math.round((targetCustomers * 3.5));
+  const estMonthlyRevenue = Math.round(estMonthlyUnits * model.avgPrice);
+  const estMonthlyOperatingCost = Math.round(estMonthlyRevenue * (1 - model.operatingMargin));
+  const estMonthlyGrossProfit = estMonthlyRevenue - estMonthlyOperatingCost;
+
+  return {
+    category: model.name,
+    categoryNameLocalized: getCategoryName(model.name),
+    unitName: model.unitName,
+    unitShort: model.unitShort,
+    avgPrice: model.avgPrice,
+    priceMin: model.priceMin,
+    priceMax: model.priceMax,
+    operatingMarginPct: Math.round(model.operatingMargin * 100),
+    radiusKm: r,
+    areaSqKm: Math.round(areaSqKm),
+    populationReach,
+    totalHouseholds,
+    targetCustomers,
+    nearbyMarkets,
+    distributionPoints,
+    feasibilityScore,
+    readinessTier,
+    badgeClass,
+    statusEmoji,
+    competitors: dynamicCompetitors,
+    swot: model.swot,
+    risks: model.risks,
+    opportunityPoints: model.opportunityPoints,
+    baseOpportunity: model.baseOpportunity,
+    projections: {
+      monthlyUnits: estMonthlyUnits,
+      monthlyRevenue: estMonthlyRevenue,
+      monthlyOperatingCost: estMonthlyOperatingCost,
+      monthlyGrossProfit: estMonthlyGrossProfit
+    }
+  };
+}
+
+// ============================================================================
+// 3. APPLICATION STATE
+// ============================================================================
+const state = {
+  view:'landing',
+  prevView:'landing',
+  lang:'en',
+  role:null,
+  loggedIn:false,
+  isGuest:false,
+  authTab:'password',
+  user:{
+    name:'Rina Bora', mobile:'9876543210', email:'',
+    state:'Assam', district:'Kamrup', village:'Rani Village', pinCode:'781131',
+    marginCapital:100000, businessInterest:'Dairy & Livestock'
+  },
+  assessmentStep:1,
+  assessment:{
+    radius:'5',
+    category:'Dairy & Livestock',
+    description:'Doorstep delivery and supply of fresh dairy products to residential clusters.',
+    lat: 26.0618,
+    lng: 91.6152
+  },
+  finance:{ margin:100000, projectCost:1000000, loan:900000, scheme:null },
+  emiInputs:{ amount:900000, rate:8, tenure:7, moratorium:6, frequency:'monthly' },
+  costPlanner:{
+    items:[
+      {cat:'Infrastructure & Shed', amt:250000},
+      {cat:'Equipment & Machinery', amt:300000},
+      {cat:'Raw Materials Buffer', amt:150000},
+      {cat:'Working Capital (3 Months)', amt:180000},
+      {cat:'Marketing & Outreach', amt:40000},
+      {cat:'Logistics & Transport Setup', amt:50000},
+      {cat:'Licensing & Certifications', amt:15000},
+      {cat:'Contingency Reserve', amt:15000}
+    ]
+  },
+  chatOpen:false,
+  chatMessages:[],
+  highContrast:false,
+  reportSection:'market',
+  mapExpanded: { assessment: false, report: false }
+};
+
+function fmtINR(n){
+  n = Math.round(n);
+  return '₹' + n.toLocaleString('en-IN');
+}
+
+function navigate(view){
+  state.prevView = state.view;
+  state.view = view;
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function goHome(){ navigate(state.loggedIn ? (state.role==='admin'?'admindashboard':'dashboard') : 'landing'); }
+
+const SIDEBAR_ITEMS = [
+  {key:'dashboard', ic:'🏠', view:'dashboard'},
+  {key:'assessment', ic:'📝', view:'assessment'},
+  {key:'market', ic:'📍', view:'report'},
+  {key:'report', ic:'📊', view:'report'},
+  {key:'scheme', ic:'🏦', view:'scheme'},
+  {key:'emi', ic:'🧮', view:'emi'},
+  {key:'repayment', ic:'📅', view:'repayment'},
+  {key:'plan', ic:'📄', view:'businessplan'},
+  {key:'ai', ic:'🤖', view:'__chat__'},
+  {key:'profile', ic:'👤', view:'profilepage'},
+  {key:'settings', ic:'⚙️', view:'settingspage'},
+];
+
+function sidebarHTML(){
+  let html = `<div class="loc">📍 <b>${state.user.village || t('common.location')}</b><br>${state.user.district}, ${state.user.state} ${state.user.pinCode ? '— '+state.user.pinCode : ''}</div>`;
+  SIDEBAR_ITEMS.forEach(it=>{
+    const active = state.view===it.view ? 'active' : '';
+    const label = t('nav.' + it.key, it.key);
+    if(it.view==='__chat__'){
+      html += `<button class="nav-item" onclick="openChat()"><span class="ic">${it.ic}</span> ${label}</button>`;
+    } else {
+      html += `<button class="nav-item ${active}" onclick="navigate('${it.view}')"><span class="ic">${it.ic}</span> ${label}</button>`;
+    }
+  });
+  html += `<div class="nav-sep"></div>`;
+  html += `<button class="nav-item" onclick="logout()"><span class="ic">🚪</span> ${t('nav.logout')}</button>`;
+  return html;
+}
+
+function mobileTabbarHTML(){
+  const items = [
+    {ic:'🏠',view:'dashboard',lbl:t('nav.home')},
+    {ic:'📝',view:'assessment',lbl:t('nav.assess')},
+    {ic:'📊',view:'report',lbl:t('nav.reportShort')},
+    {ic:'🧮',view:'emi',lbl:t('nav.emiShort')},
+    {ic:'📄',view:'businessplan',lbl:t('nav.planShort')},
+  ];
+  return items.map(i=>`<button class="${state.view===i.view?'active':''}" onclick="navigate('${i.view}')"><span>${i.ic}</span>${i.lbl}</button>`).join('');
+}
+
+const APP_VIEWS = new Set(['dashboard','assessment','processing','report','scheme','emi','repayment','costplanner','businessplan','profilepage','settingspage']);
+const ADMIN_VIEWS = new Set(['admindashboard']);
+
+function updateStaticTextElements() {
+  const curLang = I18N[state.lang] || I18N['en'];
+  const curLangLabel = document.getElementById('curLangLabel');
+  if(curLangLabel) curLangLabel.textContent = curLang.name;
+
+  const headerTagline = document.getElementById('headerTagline');
+  if(headerTagline) headerTagline.textContent = t('tagline');
+
+  const lblContrast = document.getElementById('lblContrast');
+  if(lblContrast) lblContrast.textContent = t('common.contrast', 'Contrast');
+
+  const lblHelp = document.getElementById('lblHelp');
+  if(lblHelp) lblHelp.textContent = t('common.help', 'Help');
+
+  const helpAskAi = document.getElementById('helpAskAi');
+  if(helpAskAi) helpAskAi.textContent = t('ai.headerTitle');
+}
+
+function render(){
+  const root = document.getElementById('view-root');
+  let content = '';
+  switch(state.view){
+    case 'landing': content = renderLanding(); break;
+    case 'login': content = renderLogin(); break;
+    case 'register': content = renderRegister(); break;
+    case 'otp': content = renderOtp(); break;
+    case 'profile': content = renderProfileSetup(); break;
+    case 'dashboard': content = renderDashboard(); break;
+    case 'assessment': content = renderAssessment(); break;
+    case 'processing': content = renderProcessing(); break;
+    case 'report': content = renderReport(); break;
+    case 'scheme': content = renderSchemeCalculator(); break;
+    case 'emi': content = renderEmi(); break;
+    case 'repayment': content = renderRepayment(); break;
+    case 'costplanner': content = renderCostPlanner(); break;
+    case 'businessplan': content = renderBusinessPlan(); break;
+    case 'profilepage': content = renderProfilePage(); break;
+    case 'settingspage': content = renderSettingsPage(); break;
+    case 'adminlogin': content = renderAdminLogin(); break;
+    case 'admindashboard': content = renderAdminDashboard(); break;
+    default: content = renderLanding();
+  }
+
+  if(APP_VIEWS.has(state.view) && state.loggedIn && state.role==='entrepreneur'){
+    root.innerHTML = `<div class="app-shell"><aside class="sidebar">${sidebarHTML()}</aside><section class="main-content">${content}</section></div>`;
+    const mb = document.getElementById('mobileTabbar');
+    if(mb){ mb.innerHTML = mobileTabbarHTML(); mb.style.display='flex'; }
+  } else if(ADMIN_VIEWS.has(state.view)){
+    root.innerHTML = `<div class="app-shell"><aside class="sidebar">${adminSidebarHTML()}</aside><section class="main-content">${content}</section></div>`;
+    const mb = document.getElementById('mobileTabbar');
+    if(mb) mb.style.display='none';
+  } else {
+    root.innerHTML = content;
+    const mb = document.getElementById('mobileTabbar');
+    if(mb) mb.style.display='none';
+  }
+
+  const authArea = document.getElementById('headerAuthArea');
+  if(authArea){
+    authArea.innerHTML = state.loggedIn
+      ? `<button class="btn btn-outline btn-sm" onclick="logout()">🚪 ${t('common.logout')}</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="navigate('login')">${t('common.login')}</button>`;
+  }
+
+  updateStaticTextElements();
+  updateLangMenu();
+  afterRenderHooks();
+}
+
+function updateLangMenu(){
+  const menu = document.getElementById('langMenu');
+  if(!menu) return;
+  // Supported languages for prototype: en, hi, as (designed for future NE languages)
+  const supported = ['en', 'hi', 'as'];
+  menu.innerHTML = supported.map(code=>`<button onclick="setLang('${code}')" class="${state.lang===code?'active-lang':''}">🌐 ${I18N[code].name} (${code.toUpperCase()})</button>`).join('');
+}
+
+function setLang(code){
+  if(I18N[code]){
+    state.lang = code;
+    document.documentElement.lang = code;
+    try { localStorage.setItem('bb_lang', code); } catch(e){}
+    document.getElementById('langMenu')?.classList.add('hidden');
+    render();
+  }
+}
+
+function toggleMenu(which){
+  const langMenu = document.getElementById('langMenu');
+  const helpMenu = document.getElementById('helpMenu');
+  if(which==='lang'){ langMenu?.classList.toggle('hidden'); helpMenu?.classList.add('hidden'); }
+  else { helpMenu?.classList.toggle('hidden'); langMenu?.classList.add('hidden'); }
+}
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.header-actions')){
+    document.getElementById('langMenu')?.classList.add('hidden');
+    document.getElementById('helpMenu')?.classList.add('hidden');
+  }
+});
+
+function toggleHighContrast(){
+  state.highContrast = !state.highContrast;
+  document.body.style.filter = state.highContrast ? 'contrast(1.25) saturate(1.15)' : '';
+}
+
+function logout(){
+  state.loggedIn=false; state.role=null; state.isGuest=false;
+  navigate('landing');
+}
+
+function startGuestAssessment(){
+  state.loggedIn = true;
+  state.role = 'entrepreneur';
+  state.isGuest = true;
+  state.assessmentStep = 1;
+  computeFinance(state.user.marginCapital || 100000);
+  navigate('assessment');
+}
+
+function openChat(){
+  state.chatOpen = true;
+  if(state.chatMessages.length===0){
+    state.chatMessages.push({from:'bot', text: t('ai.welcome')});
+  }
+  renderChat();
+}
+function closeChat(){ state.chatOpen=false; renderChat(); }
+
+const CHAT_SUGGESTIONS = {
+  en: [
+    "Which business is suitable for my village?",
+    "How is my loan calculated?",
+    "Explain the 10% margin requirement.",
+    "Which scheme am I eligible for?",
+    "What is my estimated monthly EMI?"
+  ],
+  hi: [
+    "मेरे गाँव के लिए कौन सा व्यवसाय उपयुक्त है?",
+    "मेरे ऋण की गणना कैसे की जाती है?",
+    "10% मार्जिन नियम क्या है?",
+    "मैं किस योजना के लिए पात्र हूँ?",
+    "मेरी अनुमानित मासिक ईएमआई क्या होगी?"
+  ],
+  as: [
+    "মোৰ গাঁৱৰ বাবে কোনটো ব্যৱসায় উপযুক্ত?",
+    "মোৰ ঋণৰ পৰিমাণ কেনেকৈ নিৰ্ধাৰণ কৰা হয়?",
+    "১০% মাৰ্জিনৰ নিয়মটো কি?",
+    "মই কোনখন চৰকাৰী আঁচনিৰ বাবে যোগ্য?",
+    "মোৰ আনুমানিক মাহেকীয়া ইএমআই কিমান হ'ব?"
+  ]
+};
+
+function chatReplyFor(q){
+  const f = state.finance;
+  const low = q.toLowerCase();
+  const cat = state.assessment.category || state.user.businessInterest;
+  const dyn = calculateDynamicFeasibility(state.user.marginCapital, cat, state.assessment.radius);
+
+  if(state.lang === 'hi') {
+    if(low.includes('मार्जिन') || low.includes('10%')) return `सरकारी नियमों के तहत, आपकी ${fmtINR(f.margin)} मार्जिन पूँजी कुल परियोजना लागत का 10% है। शेष 90% (${fmtINR(f.loan)}) संस्थागत ऋण के रूप में संरचित है।`;
+    if(low.includes('ऋण') || low.includes('लोन')) return `आपकी ${fmtINR(f.margin)} मार्जिन पूँजी के आधार पर, अनुमानित परियोजना लागत ${fmtINR(f.projectCost)} और पात्र ऋण राशि ${fmtINR(f.loan)} है।`;
+    if(low.includes('योजना') || low.includes('स्कीम')) return `आपका उद्यम ${f.scheme?f.scheme.name:'टर्म लोन योजना'} के लिए 8% वार्षिक ब्याज दर पर 6 महीने की ग्रेस अवधि के साथ पात्र है।`;
+    return `आपके ${getCategoryName(cat)} उद्यम के लिए ${state.user.village || 'गाँव'} में BusinessBuddy AI ने ${dyn.feasibilityScore}/100 का व्यवहार्यता स्कोर आकलित किया है।`;
+  }
+
+  if(state.lang === 'as') {
+    if(low.includes('মাৰ্জিন') || low.includes('১০%')) return `চৰকাৰী নিয়ম অনুসৰি আপোনাৰ ${fmtINR(f.margin)} মূলধন মুঠ প্ৰকল্প ব্যয়ৰ ১০%। বাকী ৯০% (${fmtINR(f.loan)}) প্ৰতিষ্ঠানিক ঋণ হিচাপে প্ৰদান কৰা হ'ব।`;
+    if(low.includes('ঋণ') || low.includes('টন')) return `আপোনাৰ ${fmtINR(f.margin)} মূলধনৰ ভিত্তিত প্ৰকল্প ব্যয় ${fmtINR(f.projectCost)} আৰু যোগ্য ঋণ ${fmtINR(f.loan)} হ'ব।`;
+    if(low.includes('আঁচনি')) return `আপোনাৰ ব্যৱসায়ৰ বাবে ${f.scheme?f.scheme.name:'টাৰ্ম লোন আঁচনি'} ৮% বাৰ্ষিক সুদৰ হাৰত নিৰ্বাচিত কৰা হৈছে।`;
+    return `আপোনাৰ ${getCategoryName(cat)} উদ্যোগৰ বাবে ${state.user.village || 'স্থান'} ত BusinessBuddy AI য়ে ${dyn.feasibilityScore}/১০০ স্ক'ৰ নিৰ্ধাৰণ কৰিছে।`;
+  }
+
+  // English fallback
+  if(low.includes('margin')) return `Under scheme guidelines, your margin capital of ${fmtINR(f.margin)} represents 10% of the total project cost. The remaining 90% (${fmtINR(f.loan)}) is structured as an institutional loan.`;
+  if(low.includes('loan') || low.includes('how much')) return `Based on your margin capital of ${fmtINR(f.margin)}, your feasible project cost is ${fmtINR(f.projectCost)} and your eligible loan is ${fmtINR(f.loan)} under the ${f.scheme?f.scheme.name:'Term Loan Scheme'}.`;
+  if(low.includes('scheme')) return `Your venture is matched to the ${f.scheme?f.scheme.name:'Term Loan Scheme'} at ${f.scheme?f.scheme.rate:8}% p.a. with a ${f.scheme?f.scheme.moratoriumMonths:6}-month moratorium.`;
+  return `For your ${cat} venture in ${state.user.village || 'your village'}, BusinessBuddy calculates a Feasibility Score of ${dyn.feasibilityScore}/100 with a reach of ${dyn.populationReach.toLocaleString('en-IN')} people within ${state.assessment.radius} km.`;
+}
+
+function sendChat(text){
+  if(!text) {
+    const input = document.getElementById('chatInputBox');
+    text = input.value.trim();
+    if(!text) return;
+    input.value='';
+  }
+  state.chatMessages.push({from:'user', text});
+  state.chatMessages.push({from:'bot', text: chatReplyFor(text)});
+  renderChat();
+}
+
+function renderChat(){
+  const fab = document.getElementById('chatFab');
+  if(fab) fab.innerHTML = state.chatOpen ? '' : `<button class="chat-fab" onclick="openChat()">💬 ${t('ai.headerTitle')}</button>`;
+  const panel = document.getElementById('chatPanel');
+  if(!panel) return;
+  if(!state.chatOpen){ panel.innerHTML=''; return; }
+  const msgs = state.chatMessages.map(m=>`<div class="msg ${m.from}">${m.text}</div>`).join('');
+  const suggestions = (CHAT_SUGGESTIONS[state.lang] || CHAT_SUGGESTIONS['en']).slice(0, 3);
+  
+  panel.innerHTML = `
+    <div class="chat-panel">
+      <div class="chat-head">
+        <div><div class="t">${t('ai.headerTitle')}</div><div class="s">${t('ai.headerSub')}</div></div>
+        <button class="icon-btn" style="color:#fff;border-color:rgba(255,255,255,0.3);" onclick="closeChat()">✕</button>
+      </div>
+      <div class="chat-body" id="chatBody">${msgs}</div>
+      <div class="chat-suggest">${suggestions.map(s=>`<button onclick="sendChat('${s.replace(/'/g,"\\'") }')">${s}</button>`).join('')}</div>
+      <div class="chat-input-row">
+        <input id="chatInputBox" type="text" placeholder="${t('ai.inputPlaceholder')}" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()">${t('ai.sendBtn')}</button>
+      </div>
+    </div>`;
+  const body = document.getElementById('chatBody');
+  if(body) body.scrollTop = body.scrollHeight;
+}
+
+// Leaflet Map Global Instances
+let assessLeafletMap = null;
+let assessRadiusCircle = null;
+let reportLeafletMap = null;
+let reportRadiusCircle = null;
+
+function afterRenderHooks(){
+  renderChat();
+  if(state.view==='assessment' && state.assessmentStep===1){
+    setTimeout(initAssessmentMap, 50);
+  }
+  if(state.view==='report'){
+    setTimeout(initReportMap, 50);
+  }
+  if(state.view==='emi') drawEmiChart();
+  if(state.view==='costplanner') drawCostChart();
+  if(state.view==='admindashboard') drawAdminCharts();
+  if(state.view==='otp') startOtpCountdown();
+}
+
+function initAssessmentMap(){
+  const mapEl = document.getElementById('assessmentMap');
+  if(!mapEl || typeof L === 'undefined') return;
+  
+  if(assessLeafletMap){
+    try { assessLeafletMap.remove(); } catch(e){}
+    assessLeafletMap = null;
+  }
+
+  const lat = state.assessment.lat || 26.0618;
+  const lng = state.assessment.lng || 91.6152;
+  const radKm = Number(state.assessment.radius) || 5;
+
+  assessLeafletMap = L.map('assessmentMap', {
+    center: [lat, lng],
+    zoom: radKm <= 5 ? 13 : (radKm <= 10 ? 12 : 11),
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(assessLeafletMap);
+
+  const centerIcon = L.divIcon({
+    className: 'custom-map-center-pin',
+    html: `<div style="background:#1E40AF;color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:9999px;box-shadow:0 2px 8px rgba(30,64,175,0.3);border:2px solid #fff;display:flex;align-items:center;gap:4px;white-space:nowrap;">📍 ${state.user.village || t('common.location')}</div>`,
+    iconSize: [110, 30],
+    iconAnchor: [55, 15]
+  });
+  L.marker([lat, lng], {icon: centerIcon}).addTo(assessLeafletMap).bindPopup(`<b>${state.user.village || t('common.location')}</b><br>${state.user.district}, ${state.user.state}`).openPopup();
+
+  assessRadiusCircle = L.circle([lat, lng], {
+    radius: radKm * 1000,
+    color: '#1E40AF',
+    fillColor: '#3B82F6',
+    fillOpacity: 0.12,
+    weight: 2,
+    dashArray: '6, 6'
+  }).addTo(assessLeafletMap);
+
+  const points = [
+    { name: 'Local Market / Haat', lat: lat + 0.015, lng: lng + 0.018, icon: '🏪' },
+    { name: 'Residential Cluster', lat: lat - 0.012, lng: lng - 0.015, icon: '🏘️' },
+    { name: 'Commercial Node', lat: lat + 0.022, lng: lng - 0.011, icon: '🏢' }
+  ];
+
+  points.forEach(pt => {
+    const ptIcon = L.divIcon({
+      className: 'custom-map-pt',
+      html: `<div style="background:#fff;border:1px solid #1E40AF;padding:3px 8px;border-radius:9999px;font-size:11px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1);">${pt.icon} ${pt.name}</div>`,
+      iconSize: [110, 24],
+      iconAnchor: [55, 12]
+    });
+    L.marker([pt.lat, pt.lng], {icon: ptIcon}).addTo(assessLeafletMap);
+  });
+
+  setTimeout(() => { assessLeafletMap?.invalidateSize(); }, 200);
+}
+
+function initReportMap(){
+  const mapEl = document.getElementById('reportMap');
+  if(!mapEl || typeof L === 'undefined') return;
+  
+  if(reportLeafletMap){
+    try { reportLeafletMap.remove(); } catch(e){}
+    reportLeafletMap = null;
+  }
+
+  const lat = state.assessment.lat || 26.0618;
+  const lng = state.assessment.lng || 91.6152;
+  const radKm = Number(state.assessment.radius) || 5;
+
+  reportLeafletMap = L.map('reportMap', {
+    center: [lat, lng],
+    zoom: radKm <= 5 ? 13 : (radKm <= 10 ? 12 : 11),
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(reportLeafletMap);
+
+  const centerIcon = L.divIcon({
+    className: 'custom-map-center-pin',
+    html: `<div style="background:#1E40AF;color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:9999px;box-shadow:0 2px 8px rgba(30,64,175,0.3);border:2px solid #fff;">📍 ${state.user.village || t('common.location')}</div>`,
+    iconSize: [110, 30],
+    iconAnchor: [55, 15]
+  });
+  L.marker([lat, lng], {icon: centerIcon}).addTo(reportLeafletMap).bindPopup(`<b>${state.user.village}</b>`).openPopup();
+
+  reportRadiusCircle = L.circle([lat, lng], {
+    radius: radKm * 1000,
+    color: '#1E40AF',
+    fillColor: '#3B82F6',
+    fillOpacity: 0.15,
+    weight: 2
+  }).addTo(reportLeafletMap);
+
+  const cat = state.assessment.category || state.user.businessInterest;
+  const dyn = calculateDynamicFeasibility(state.user.marginCapital, cat, radKm);
+
+  dyn.competitors.slice(0, 4).forEach((comp, idx) => {
+    const offsets = [
+      { dLat: 0.012, dLng: 0.010 },
+      { dLat: -0.014, dLng: 0.012 },
+      { dLat: 0.018, dLng: -0.015 },
+      { dLat: -0.020, dLng: -0.018 }
+    ];
+    const off = offsets[idx % offsets.length];
+    const ptIcon = L.divIcon({
+      className: 'custom-map-pt',
+      html: `<div style="background:#fff;border:1px solid #475569;padding:3px 8px;border-radius:9999px;font-size:11px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1);">${comp.name} (${comp.price})</div>`,
+      iconSize: [140, 24],
+      iconAnchor: [70, 12]
+    });
+    L.marker([lat + off.dLat, lng + off.dLng], {icon: ptIcon}).addTo(reportLeafletMap);
+  });
+
+  setTimeout(() => { reportLeafletMap?.invalidateSize(); }, 200);
+}
+
+function updateMapRadius(radKm){
+  if(assessRadiusCircle && assessLeafletMap){
+    assessRadiusCircle.setRadius(radKm * 1000);
+    const lat = state.assessment.lat || 26.0618;
+    const lng = state.assessment.lng || 91.6152;
+    assessLeafletMap.setView([lat, lng], radKm <= 5 ? 13 : (radKm <= 10 ? 12 : 11));
+  }
+}
+
+function toggleMapExpand(which){
+  if(which === 'assessment' || which === 'assess'){
+    state.mapExpanded.assessment = !state.mapExpanded.assessment;
+    const wrap = document.getElementById('assessMapContainer');
+    const btn = document.getElementById('assessMapToggleBtn');
+    const overlayBtn = document.getElementById('assessMapOverlayBtn');
+    if(wrap){
+      if(state.mapExpanded.assessment){
+        wrap.classList.add('is-expanded');
+      } else {
+        wrap.classList.remove('is-expanded');
+      }
+    }
+    const label = state.mapExpanded.assessment ? t('common.collapseMap') : t('common.expandMap');
+    if(btn) btn.innerHTML = label;
+    if(overlayBtn) overlayBtn.innerHTML = label;
+    setTimeout(()=>{ assessLeafletMap?.invalidateSize(); }, 300);
+  } else if(which === 'report'){
+    state.mapExpanded.report = !state.mapExpanded.report;
+    const wrap = document.getElementById('reportMapContainer');
+    const btn = document.getElementById('reportMapToggleBtn');
+    const overlayBtn = document.getElementById('reportMapOverlayBtn');
+    if(wrap){
+      if(state.mapExpanded.report){
+        wrap.classList.add('is-expanded');
+      } else {
+        wrap.classList.remove('is-expanded');
+      }
+    }
+    const label = state.mapExpanded.report ? t('common.collapseMap') : t('common.expandMap');
+    if(btn) btn.innerHTML = label;
+    if(overlayBtn) overlayBtn.innerHTML = label;
+    setTimeout(()=>{ reportLeafletMap?.invalidateSize(); }, 300);
+  }
+}
+
+function syncLocationInput(key, val){
+  state.user[key] = val;
+}
+
+function setRadius(rad){
+  state.assessment.radius = String(rad);
+  ['5','10','25'].forEach(r=>{
+    const b = document.getElementById('radBtn'+r);
+    if(b){
+      if(r===String(rad)) b.classList.add('active');
+      else b.classList.remove('active');
+    }
+  });
+  const customInput = document.getElementById('customRadiusInput');
+  if(customInput && ['5','10','25'].includes(String(rad))){
+    customInput.value = '';
+  }
+  updateMapRadius(Number(rad));
+}
+
+function setCustomRadius(val){
+  const num = Number(val);
+  if(num > 0 && num <= 200){
+    state.assessment.radius = String(num);
+    ['5','10','25'].forEach(r=>{
+      const b = document.getElementById('radBtn'+r);
+      if(b) b.classList.remove('active');
+    });
+    updateMapRadius(num);
+  }
+}
+
+function useCurrentLocation(){
+  if(!navigator.geolocation){
+    alert('Geolocation is not supported by your browser.');
+    return;
+  }
+  const btn = document.getElementById('locBtn');
+  if(btn) btn.innerHTML = t('common.detectingLocation');
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      state.assessment.lat = lat;
+      state.assessment.lng = lng;
+
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+        const data = await resp.json();
+        if(data && data.address){
+          const addr = data.address;
+          state.user.state = addr.state || state.user.state;
+          state.user.district = addr.state_district || addr.county || addr.city || state.user.district;
+          state.user.village = addr.village || addr.suburb || addr.town || addr.city_district || 'Detected Area';
+          state.user.pinCode = addr.postcode || state.user.pinCode;
+
+          const stEl = document.getElementById('a_state'); if(stEl) stEl.value = state.user.state;
+          const dtEl = document.getElementById('a_district'); if(dtEl) dtEl.value = state.user.district;
+          const vlEl = document.getElementById('a_village'); if(vlEl) vlEl.value = state.user.village;
+          const pnEl = document.getElementById('a_pin'); if(pnEl) pnEl.value = state.user.pinCode;
+        }
+      } catch(err){
+        console.log('Reverse geocoding fallback:', err);
+      }
+
+      if(btn) btn.innerHTML = t('common.locationUpdated');
+      setTimeout(()=>{ if(btn) btn.innerHTML = t('common.useCurrentLocation'); }, 2000);
+      initAssessmentMap();
+    },
+    (err) => {
+      if(btn) btn.innerHTML = t('common.useCurrentLocation');
+      state.user.state = 'Assam';
+      state.user.district = 'Kamrup';
+      state.user.village = 'Rani Village';
+      state.user.pinCode = '781131';
+      state.assessment.lat = 26.0618;
+      state.assessment.lng = 91.6152;
+      
+      const stEl = document.getElementById('a_state'); if(stEl) stEl.value = state.user.state;
+      const dtEl = document.getElementById('a_district'); if(dtEl) dtEl.value = state.user.district;
+      const vlEl = document.getElementById('a_village'); if(vlEl) vlEl.value = state.user.village;
+      const pnEl = document.getElementById('a_pin'); if(pnEl) pnEl.value = state.user.pinCode;
+      
+      initAssessmentMap();
+      alert('Location detected via approximate network location: Kamrup, Assam (Demo).');
+    },
+    { timeout: 8000 }
+  );
+}
+
+const SCHEMES = {
+  micro:{ name:'Micro Finance Scheme', cap:125000, rate:6.5, tenureYears:3, moratoriumMonths:3, minCost:0, maxCost:140000 },
+  term:{ name:'Term Loan Scheme', cap:4500000, rate:8, tenureYears:7, moratoriumMonths:6, minCost:140001, maxCost:5000000 }
+};
+
+function computeFinance(margin){
+  const projectCost = margin / 0.10;
+  let loanRequirement = projectCost * 0.90;
+  let scheme, exceedsCap=false, cappedLoan=loanRequirement, outOfRange=false;
+
+  if(projectCost <= SCHEMES.micro.maxCost){
+    scheme = SCHEMES.micro;
+  } else if(projectCost <= SCHEMES.term.maxCost){
+    scheme = SCHEMES.term;
+  } else {
+    scheme = SCHEMES.term;
+    outOfRange = true;
+  }
+
+  if(loanRequirement > scheme.cap){
+    exceedsCap = true;
+    cappedLoan = scheme.cap;
+  }
+
+  state.finance = {
+    margin, projectCost, loan: cappedLoan, rawLoan: loanRequirement,
+    scheme, exceedsCap, outOfRange
+  };
+  state.emiInputs.amount = Math.round(cappedLoan);
+  state.emiInputs.rate = scheme.rate;
+  state.emiInputs.tenure = scheme.tenureYears;
+  state.emiInputs.moratorium = scheme.moratoriumMonths;
+  return state.finance;
+}
+
+function footerHTML(){
+  return `
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div style="max-width:300px;">
+        <h4 style="color:#FFFFFF;display:flex;align-items:center;gap:6px;">BUSINESS<span style="color:var(--md-sys-color-secondary);">BUDDY</span></h4>
+        <p style="font-size:13px;line-height:1.6;color:#94A3B8;">${t('tagline')}</p>
+      </div>
+      <div><h4>${t('common.quickLinks', 'Quick Links')}</h4><div class="links">
+        <a href="#" onclick="return false;">About BusinessBuddy</a>
+        <a href="#" onclick="openChat();return false;">Help &amp; Support</a>
+        <a href="#" onclick="openChat();return false;">FAQ</a>
+        <a href="#" onclick="openChat();return false;">Contact</a>
+        <a href="#" onclick="return false;">Privacy Policy</a>
+      </div></div>
+      <div><h4>For Entrepreneurs</h4><div class="links">
+        <a href="#" onclick="startGuestAssessment();return false;">${t('common.instant')}</a>
+        <a href="#" onclick="navigate('login');return false;">${t('common.login')}</a>
+        <a href="#" onclick="navigate('scheme');return false;">${t('nav.scheme')}</a>
+        <a href="#" onclick="navigate('emi');return false;">${t('nav.emi')}</a>
+      </div></div>
+      <div><h4>Administration</h4><div class="links">
+        <a href="#" onclick="navigate('adminlogin');return false;">Administrator Portal</a>
+      </div></div>
+    </div>
+    <div class="footer-notice">
+      BusinessBuddy is a decision-support prototype developed for Smart India Hackathon 2026 (Problem Statement 91). Feasibility ratings, market reach demographics, and financial models are computed algorithmically for planning purposes.
+    </div>
+    <div class="footer-bottom">© 2026 BusinessBuddy · Smart India Hackathon</div>
+  </footer>`;
+}
+
+function renderLanding(){
+  return `
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="eyebrow">${t('hero.eyebrow')}</div>
+        <h1>${t('hero.title')}</h1>
+        <p>${t('hero.subtitle')}</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary btn-lg" onclick="startGuestAssessment()">${t('hero.startBtn')}</button>
+          <button class="btn btn-outline btn-lg" onclick="entrepreneurDemo()">${t('hero.demoBtn')}</button>
+        </div>
+      </div>
+      <div class="hero-journey">
+        <div class="j-row"><b>₹1,00,000</b> ${t('hero.jMargin')}</div>
+        <div class="j-row j-arrow">↓</div>
+        <div class="j-row"><b>₹10,00,000</b> ${t('hero.jCost')}</div>
+        <div class="j-row j-arrow">↓</div>
+        <div class="j-row"><b>₹9,00,000</b> ${t('hero.jLoan')}</div>
+        <div class="j-row j-arrow">↓</div>
+        <div class="j-row"><b>${t('hero.jScheme')}</b></div>
+        <div class="j-row j-arrow">↓</div>
+        <div class="j-row"><b>${t('hero.jReport')}</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-strip">
+    <div class="page" style="padding-top:36px;padding-bottom:36px;">
+      <div class="grid grid-4">
+        <div class="feature-item"><div class="fi">📍</div><div><h4>${t('features.f1Title')}</h4><p>${t('features.f1Desc')}</p></div></div>
+        <div class="feature-item"><div class="fi">🧮</div><div><h4>${t('features.f2Title')}</h4><p>${t('features.f2Desc')}</p></div></div>
+        <div class="feature-item"><div class="fi">📊</div><div><h4>${t('features.f3Title')}</h4><p>${t('features.f3Desc')}</p></div></div>
+        <div class="feature-item"><div class="fi">🤖</div><div><h4>${t('features.f4Title')}</h4><p>${t('features.f4Desc')}</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-eyebrow">${t('steps.eyebrow')}</div>
+    <h2 class="section-title">${t('steps.title')}</h2>
+    <p class="section-sub">${t('steps.subtitle')}</p>
+    <div class="grid grid-4">
+      ${[
+        ['1', t('steps.s1Title'), t('steps.s1Desc')],
+        ['2', t('steps.s2Title'), t('steps.s2Desc')],
+        ['3', t('steps.s3Title'), t('steps.s3Desc')],
+        ['4', t('steps.s4Title'), t('steps.s4Desc')]
+      ].map(s=>`<div class="card-flat"><div class="badge badge-blue" style="margin-bottom:10px;">${t('common.step')} ${s[0]}</div><h4 style="margin:0 0 6px;color:var(--md-sys-color-on-surface);font-size:15px;">${s[1]}</h4><p style="margin:0;font-size:13px;color:var(--md-sys-color-on-surface-variant);line-height:1.6;">${s[2]}</p></div>`).join('')}
+    </div>
+  </section>
+
+  ${footerHTML()}
+  `;
+}
+
+function entrepreneurDemo(){
+  state.loggedIn = true;
+  state.role = 'entrepreneur';
+  state.isGuest = false;
+  state.user = {
+    name:'Rina Bora', mobile:'9876543210', email:'',
+    state:'Assam', district:'Kamrup', village:'Rani Village', pinCode:'781131',
+    marginCapital:100000, businessInterest:'Dairy & Livestock'
+  };
+  state.assessment.category = 'Dairy & Livestock';
+  state.assessment.description = 'Doorstep fresh milk and curd supply to residential clusters.';
+  computeFinance(100000);
+  navigate('dashboard');
+}
+
+function adminDemo(){
+  state.loggedIn = true;
+  state.role = 'admin';
+  navigate('admindashboard');
+}
+
+function renderLogin(){
+  return `
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <h2>${t('auth.sideTitle')}</h2>
+      <p>${t('auth.sideSub')}</p>
+      <div class="auth-flow-mini">
+        <div class="step"><span class="dot"></span> Location &amp; profile parameter setup</div>
+        <div class="step"><span class="dot"></span> Mathematical feasibility analysis</div>
+        <div class="step"><span class="dot"></span> Scheme &amp; loan amortization model</div>
+        <div class="step"><span class="dot"></span> Bank-ready feasibility dossier</div>
+      </div>
+    </div>
+    <div class="auth-form">
+      <div class="auth-box">
+        <h2 class="font-head" style="color:var(--md-sys-color-on-surface);margin:0 0 4px;">${t('auth.welcomeTitle')}</h2>
+        <p style="color:var(--md-sys-color-on-surface-variant);font-size:13.5px;margin:0 0 20px;">${t('auth.welcomeSub')}</p>
+
+        <div class="tabs">
+          <button class="${state.authTab==='password'?'active':''}" onclick="state.authTab='password';render()">${t('auth.tabPassword')}</button>
+          <button class="${state.authTab==='otp'?'active':''}" onclick="state.authTab='otp';render()">${t('auth.tabOtp')}</button>
+        </div>
+
+        <div class="field">
+          <label>${t('auth.mobileLabel')}</label>
+          <div class="field-row"><div class="prefix">+91</div><input type="tel" placeholder="98765 43210" maxlength="10"></div>
+        </div>
+        ${state.authTab==='password' ? `
+          <div class="field"><label>${t('auth.passwordLabel')}</label><input type="password" placeholder="••••••••"></div>
+          <div style="text-align:right;margin-bottom:14px;"><a href="#" class="small-link" onclick="return false;">${t('auth.forgotPassword')}</a></div>
+          <button class="btn btn-primary btn-block btn-lg" onclick="navigate('dashboard');state.loggedIn=true;state.role='entrepreneur';render()">${t('common.login')}</button>
+        ` : `
+          <button class="btn btn-primary btn-block btn-lg" onclick="navigate('otp')">${t('auth.sendOtpBtn')}</button>
+        `}
+
+        <div class="guest-box">
+          <p>${t('auth.guestPrompt')}</p>
+          <button class="btn btn-secondary btn-block" onclick="startGuestAssessment()">${t('auth.guestBtn')}</button>
+        </div>
+
+        <div class="divider">OR</div>
+        <p style="text-align:center;font-size:13.5px;margin:0 0 10px;">${t('auth.newToApp')} <a href="#" class="small-link" onclick="navigate('register');return false;">${t('auth.createAccount')}</a></p>
+
+        <div class="demo-box">
+          <div class="label">${t('auth.demoLabel')}</div>
+          <div class="demo-buttons">
+            <button class="btn btn-outline-blue btn-sm" onclick="entrepreneurDemo()">${t('auth.demoEntrepreneur')}</button>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('adminlogin')">${t('auth.demoAdmin')}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderRegister(){
+  return `
+  <div class="page-narrow">
+    <div class="section-eyebrow">${t('auth.createAccount')}</div>
+    <h2 class="section-title">Create your BusinessBuddy Account</h2>
+    <p class="section-sub">Enter your details to save your enterprise dossiers.</p>
+    <div class="card">
+      <div class="grid grid-2">
+        <div class="field"><label>Full Name</label><input type="text" placeholder="e.g. Rina Bora"></div>
+        <div class="field"><label>${t('auth.mobileLabel')}</label><div class="field-row"><div class="prefix">+91</div><input type="tel" placeholder="10-digit number"></div></div>
+        <div class="field"><label>Email (Optional)</label><input type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>Language</label>
+          <select onchange="setLang(this.value)">${['en','hi','as'].map(c=>`<option value="${c}" ${state.lang===c?'selected':''}>${I18N[c].name}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>${t('common.state')}</label><input type="text" placeholder="e.g. Assam" value="${state.user.state}"></div>
+        <div class="field"><label>${t('common.district')}</label><input type="text" placeholder="e.g. Kamrup" value="${state.user.district}"></div>
+        <div class="field"><label>${t('common.village')}</label><input type="text" placeholder="e.g. Rani Village" value="${state.user.village}"></div>
+        <div class="field"><label>${t('common.pinCode')}</label><input type="text" placeholder="e.g. 781131" maxlength="6" value="${state.user.pinCode}"></div>
+        <div class="field"><label>${t('auth.passwordLabel')}</label><input type="password" placeholder="Create password"></div>
+        <div class="field"><label>Confirm Password</label><input type="password" placeholder="Re-enter password"></div>
+      </div>
+      <div class="checkbox-row"><input type="checkbox" id="tos"><label for="tos">I agree to the Terms of Service and Privacy Policy.</label></div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="navigate('otp')">${t('common.register')}</button>
+      <p class="login-hint">Already have an account? <a href="#" class="small-link" onclick="navigate('login');return false;">${t('common.login')}</a> or <a href="#" class="small-link" onclick="startGuestAssessment();return false;">Continue as Guest</a></p>
+    </div>
+  </div>`;
+}
+
+function renderOtp(){
+  return `
+  <div class="page-narrow" style="text-align:center;">
+    <div class="card" style="max-width:420px;margin:20px auto;">
+      <div style="font-size:32px;margin-bottom:8px;">📱</div>
+      <h2 class="section-title" style="text-align:center;">${t('auth.verifyTitle')}</h2>
+      <p class="section-sub">${t('auth.verifySub')}</p>
+      <div class="otp-boxes">
+        ${[1,2,3,4,5,6].map((n,i)=>`<input maxlength="1" inputmode="numeric" id="otp${i}" oninput="if(this.value)document.getElementById('otp${i+1}')?.focus()">`).join('')}
+      </div>
+      <div class="countdown" id="otpCountdown">Resend OTP in 00:30</div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="navigate('profile')">${t('auth.verifyBtn')}</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="startOtpCountdown()">${t('auth.resendOtp')}</button>
+    </div>
+  </div>`;
+}
+
+let otpTimerHandle=null;
+function startOtpCountdown(){
+  clearInterval(otpTimerHandle);
+  let secs=30;
+  const el = ()=>document.getElementById('otpCountdown');
+  otpTimerHandle = setInterval(()=>{
+    secs--;
+    if(el()) el().textContent = `Resend OTP in 00:${String(secs).padStart(2,'0')}`;
+    if(secs<=0){ clearInterval(otpTimerHandle); if(el()) el().textContent='You can resend OTP now.'; }
+  },1000);
+}
+
+function renderProfileSetup(){
+  const cats = Object.keys(CATEGORY_MODELS);
+  return `
+  <div class="page-narrow">
+    <div class="section-eyebrow">${t('nav.profile')}</div>
+    <h2 class="section-title">Configure Entrepreneur Profile</h2>
+    <p class="section-sub">This baseline helps BusinessBuddy calibrate your feasibility models.</p>
+
+    <div class="card" style="margin-bottom:18px;">
+      <h4 style="margin-top:0;">1. Personal &amp; Experience</h4>
+      <div class="grid grid-2">
+        <div class="field"><label>Age</label><input type="number" placeholder="e.g. 29"></div>
+        <div class="field"><label>Education</label><input type="text" placeholder="e.g. Higher Secondary"></div>
+        <div class="field"><label>${t('assessment.experience')}</label><input type="text" placeholder="e.g. None / 2 years"></div>
+        <div class="field"><label>${t('assessment.existingBusiness')}</label><input type="text" placeholder="Optional"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <h4 style="margin-top:0;">2. Financial Capacity</h4>
+      <div class="field">
+        <label>${t('common.marginCapital')} (₹) <span class="info-icon" title="Beneficiary 10% Contribution">i</span></label>
+        <div class="field-row"><div class="prefix">₹</div><input type="number" id="marginInput" value="${state.user.marginCapital}"></div>
+        <div class="hint">10% margin contribution unlocks 90% loan eligibility under government schemes.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">3. Primary Business Sector</h4>
+      <div class="grid grid-4">
+        ${cats.map(c=>`<div class="cat-card ${state.user.businessInterest===c?'selected':''}" onclick="selectInterest('${c}')"><div class="lbl">${getCategoryName(c)}</div></div>`).join('')}
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:24px;" onclick="finishProfileSetup()">Continue to Dashboard</button>
+    </div>
+  </div>`;
+}
+
+function selectInterest(c){ state.user.businessInterest = c; render(); }
+
+function renderDashboard(){
+  const f = state.finance;
+  const cat = state.assessment.category || state.user.businessInterest;
+  const dyn = calculateDynamicFeasibility(f.margin, cat, state.assessment.radius);
+
+  return `
+  <div class="topbar-inline">
+    <div>
+      <div class="section-eyebrow">${t('nav.dashboard')}</div>
+      <h2 class="section-title">${t('dashboard.welcome')}, ${state.user.name || 'Entrepreneur'} ${state.isGuest?`<span class="badge badge-blue">${t('dashboard.guestBadge')}</span>`:''}</h2>
+      <div class="pill">📍 ${state.user.village || t('common.location')} | ${state.user.district}, ${state.user.state} ${state.user.pinCode?'| '+state.user.pinCode:''}</div>
+    </div>
+    <button class="btn btn-primary" onclick="navigate('assessment')">+ New Assessment</button>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:24px;">
+    <div class="stat-card">
+      <div class="label">${t('dashboard.statFeasibility')}</div>
+      <div class="value">${dyn.feasibilityScore} / 100</div>
+      <div class="sub"><span class="badge ${dyn.badgeClass}">${dyn.statusEmoji} ${dyn.readinessTier}</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">${t('dashboard.statReach')}</div>
+      <div class="value">${dyn.populationReach.toLocaleString('en-IN')}</div>
+      <div class="sub">Across ${dyn.radiusKm} ${t('common.km')} (${dyn.targetCustomers.toLocaleString('en-IN')} households)</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">${t('dashboard.statCost')}</div>
+      <div class="value">${fmtINR(f.projectCost)}</div>
+      <div class="sub">Based on ${fmtINR(f.margin)} margin</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">${t('dashboard.statLoan')}</div>
+      <div class="value">${fmtINR(f.loan)}</div>
+      <div class="sub">Scheme: ${f.scheme ? f.scheme.name : 'Term Loan'}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4 style="margin-top:0;">${t('dashboard.activeIdeaTitle')}</h4>
+      <p style="color:var(--md-sys-color-on-surface-variant);font-size:14px;margin-bottom:16px;"><b>${getCategoryName(cat)}</b> — ${state.assessment.description || dyn.baseOpportunity}</p>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('assessment')">Update Assessment</button>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">${t('dashboard.nextMilestoneTitle')}</h4>
+      <p style="color:var(--md-sys-color-on-surface-variant);font-size:14px;margin-bottom:16px;">${t('dashboard.nextMilestoneDesc')}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="navigate('report')">${t('dashboard.viewReportBtn')}</button>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('scheme')">${t('dashboard.schemeCalcBtn')}</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h4 style="margin-top:0;">${t('dashboard.modulesTitle')}</h4>
+    <div class="grid grid-4">
+      <button class="btn btn-ghost" onclick="navigate('emi')">🧮 ${t('nav.emi')}</button>
+      <button class="btn btn-ghost" onclick="navigate('repayment')">📅 ${t('nav.repayment')}</button>
+      <button class="btn btn-ghost" onclick="navigate('costplanner')">📊 ${t('nav.costplanner', 'Cost Breakdown')}</button>
+      <button class="btn btn-ghost" onclick="navigate('businessplan')">📄 ${t('nav.plan')}</button>
+    </div>
+  </div>`;
+}
+
+function renderProfilePage(){
+  return `
+  <div class="section-eyebrow">${t('nav.profile')}</div>
+  <h2 class="section-title">Profile Parameters</h2>
+  <div class="card grid grid-2">
+    <div class="field"><label>Full Name</label><input value="${state.user.name||'Rina Bora'}" oninput="state.user.name=this.value"></div>
+    <div class="field"><label>${t('auth.mobileLabel')}</label><input value="+91 ${state.user.mobile||'9876543210'}" disabled></div>
+    <div class="field"><label>${t('common.state')}</label><input value="${state.user.state}" oninput="state.user.state=this.value"></div>
+    <div class="field"><label>${t('common.district')}</label><input value="${state.user.district}" oninput="state.user.district=this.value"></div>
+    <div class="field"><label>${t('common.village')}</label><input value="${state.user.village}" oninput="state.user.village=this.value"></div>
+    <div class="field"><label>${t('common.pinCode')}</label><input value="${state.user.pinCode||''}" oninput="state.user.pinCode=this.value"></div>
+    <div class="field"><label>Business Sector</label><input value="${getCategoryName(state.user.businessInterest)}" oninput="state.user.businessInterest=this.value"></div>
+    <div class="field"><label>${t('common.marginCapital')} (₹)</label><input type="number" value="${state.user.marginCapital}" oninput="state.user.marginCapital=Number(this.value)||100000"></div>
+  </div>
+  <button class="btn btn-primary" onclick="computeFinance(state.user.marginCapital);alert('Profile saved successfully.')">${t('common.save')}</button>`;
+}
+
+function renderSettingsPage(){
+  return `
+  <div class="section-eyebrow">${t('nav.settings')}</div>
+  <h2 class="section-title">Account &amp; Language</h2>
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="margin-top:0;">Preferred Interface Language</h4>
+    <select onchange="setLang(this.value)">${['en','hi','as'].map(c=>`<option value="${c}" ${state.lang===c?'selected':''}>${I18N[c].name} (${c.toUpperCase()})</option>`).join('')}</select>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0;">Accessibility Display Mode</h4>
+    <button class="btn btn-outline" onclick="toggleHighContrast()">Toggle High Contrast Mode</button>
+  </div>`;
+}
+
+function stepperHTML(current){
+  const labels = [
+    t('assessment.step1Head').replace(/^\d+\.\s*/,''),
+    t('assessment.step2Head').replace(/^\d+\.\s*/,''),
+    t('assessment.step3Head').replace(/^\d+\.\s*/,''),
+    t('assessment.step4Head').replace(/^\d+\.\s*/,''),
+    t('assessment.step5Head').replace(/^\d+\.\s*/,'')
+  ];
+  return `<div class="stepper">${labels.map((s,i)=>{
+    const n=i+1;
+    const cls = n<current?'done':(n===current?'active':'');
+    const line = i<labels.length-1 ? '<div class="line"></div>' : '';
+    return `<div class="step ${cls}"><div class="num">${n<current?'✓':n}</div>${s}</div>${line}`;
+  }).join('')}</div>`;
+}
+
+function renderAssessment(){
+  const step = state.assessmentStep;
+  let body = '';
+  if(step===1){
+    const rad = state.assessment.radius || '5';
+    body = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <h4 style="margin:0;">${t('assessment.step1Head')}</h4>
+        <button class="btn btn-outline btn-sm" id="locBtn" onclick="useCurrentLocation()">${t('common.useCurrentLocation')}</button>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="field"><label>${t('common.state')}</label><input value="${state.user.state||''}" id="a_state" placeholder="e.g. Assam" oninput="syncLocationInput('state', this.value)"></div>
+        <div class="field"><label>${t('common.district')}</label><input value="${state.user.district||''}" id="a_district" placeholder="e.g. Kamrup" oninput="syncLocationInput('district', this.value)"></div>
+        <div class="field"><label>${t('common.village')}</label><input value="${state.user.village||''}" id="a_village" placeholder="e.g. Rani Village" oninput="syncLocationInput('village', this.value)"></div>
+        <div class="field"><label>${t('common.pinCode')}</label><input value="${state.user.pinCode||''}" id="a_pin" placeholder="e.g. 781131" maxlength="6" oninput="syncLocationInput('pinCode', this.value)"></div>
+      </div>
+
+      <div class="map-container-wrap">
+        <div id="assessmentMap" class="leaflet-map-el"></div>
+      </div>
+      <div class="map-legend">
+        <span><span class="sw" style="background:#1E40AF"></span>${t('common.location')}</span>
+        <span><span class="sw" style="background:#475569"></span>${t('report.activeMarkets')}</span>
+        <span><span class="sw" style="border:1.5px dashed #1E40AF;background:transparent;"></span>${rad} ${t('common.km')} ${t('common.radius')}</span>
+      </div>
+
+      <h4 style="margin-top:20px;margin-bottom:4px;">${t('common.radius')}</h4>
+      <p style="font-size:13px;color:var(--md-sys-color-on-surface-variant);margin-top:0;">${t('assessment.radiusSub')}</p>
+      
+      <div class="radius-selector-wrap">
+        <div class="toggle-group">
+          <button class="${rad==='5'?'active':''}" id="radBtn5" onclick="setRadius('5')">5 ${t('common.km')}</button>
+          <button class="${rad==='10'?'active':''}" id="radBtn10" onclick="setRadius('10')">10 ${t('common.km')}</button>
+          <button class="${rad==='25'?'active':''}" id="radBtn25" onclick="setRadius('25')">25 ${t('common.km')}</button>
+        </div>
+        <div class="custom-radius-input-box">
+          <span>${t('assessment.customRadiusLabel')}</span>
+          <input type="number" min="1" max="150" id="customRadiusInput" placeholder="15" value="${['5','10','25'].includes(rad)?'':rad}" oninput="setCustomRadius(this.value)">
+          <span>${t('common.km')}</span>
+        </div>
+      </div>
+    </div>`;
+  } else if(step===2){
+    body = `
+    <div class="card">
+      <h4 style="margin-top:0;">${t('assessment.step2Head')}</h4>
+      <div class="grid grid-2">
+        <div class="field"><label>${t('common.marginCapital')}</label><div class="field-row"><div class="prefix">₹</div><input type="number" id="a_margin" value="${state.user.marginCapital}" oninput="state.user.marginCapital=Number(this.value)||100000"></div></div>
+        <div class="field"><label>${t('assessment.familyMembers')}</label><input type="number" value="2"></div>
+        <div class="field"><label>${t('assessment.experience')}</label><input value="None"></div>
+        <div class="field"><label>${t('assessment.existingBusiness')}</label><input value="No"></div>
+      </div>
+    </div>`;
+  } else if(step===3){
+    const cats = Object.keys(CATEGORY_MODELS);
+    body = `
+    <div class="card">
+      <h4 style="margin-top:0;">${t('assessment.step3Head')}</h4>
+      <div class="grid grid-4">
+        ${cats.map(c=>`<div class="cat-card ${state.assessment.category===c?'selected':''}" onclick="pickCategory('${c}')"><div class="lbl">${getCategoryName(c)}</div></div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:20px;">
+        <label>${t('assessment.describeIdea')}</label>
+        <textarea rows="3" id="a_desc" placeholder="${t('assessment.describePlaceholder')}" oninput="state.assessment.description=this.value">${state.assessment.description}</textarea>
+      </div>
+    </div>`;
+  } else if(step===4){
+    body = `
+    <div class="card">
+      <h4 style="margin-top:0;">${t('assessment.step4Head')}</h4>
+      <p style="color:var(--md-sys-color-on-surface-variant);font-size:13.5px;">${t('assessment.step4Desc')}</p>
+      <div class="field">
+        <label>${t('assessment.confirmMargin')} <span class="info-icon" title="Beneficiary Contribution">i</span></label>
+        <div class="field-row"><div class="prefix">₹</div><input type="number" id="a_margin2" value="${state.user.marginCapital}" oninput="state.user.marginCapital=Number(this.value)||100000"></div>
+      </div>
+    </div>`;
+  } else if(step===5){
+    const cat = state.assessment.category || state.user.businessInterest;
+    body = `
+    <div class="card" style="text-align:center;">
+      <h4 style="margin-top:0;">${t('assessment.step5Head')}</h4>
+      <p style="color:var(--md-sys-color-on-surface-variant);font-size:14px;">${t('assessment.step5Sub')}</p>
+      <div class="grid grid-3" style="text-align:left;margin:22px 0;">
+        <div class="card-flat"><div class="section-eyebrow">${t('common.location')} &amp; ${t('common.radius')}</div><b>${state.user.village || 'Location'}, ${state.user.district} (${state.assessment.radius} ${t('common.km')})</b></div>
+        <div class="card-flat"><div class="section-eyebrow">Sector</div><b>${getCategoryName(cat)}</b></div>
+        <div class="card-flat"><div class="section-eyebrow">${t('common.marginCapital')}</div><b>${fmtINR(state.user.marginCapital)}</b></div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="analyzeBusiness()">${t('assessment.generateBtn')}</button>
+    </div>`;
+  }
+
+  return `
+  <div class="section-eyebrow">${t('assessment.title')}</div>
+  <h2 class="section-title">${t('assessment.subtitle')}</h2>
+  ${stepperHTML(step)}
+  ${body}
+  <div style="display:flex;justify-content:space-between;margin-top:24px;">
+    <button class="btn btn-outline" ${step===1?'disabled style="visibility:hidden;"':''} onclick="assessBack()">${t('common.back')}</button>
+    ${step<5 ? `<button class="btn btn-primary" onclick="assessNext()">${t('common.next')}</button>` : ''}
+  </div>`;
+}
+
+function pickCategory(c){ state.assessment.category=c; render(); }
+function assessBack(){ if(state.assessmentStep>1){ state.assessmentStep--; render(); } }
+function assessNext(){
+  if(state.assessmentStep===1){
+    const stEl = document.getElementById('a_state'); if(stEl) state.user.state = stEl.value;
+    const dtEl = document.getElementById('a_district'); if(dtEl) state.user.district = dtEl.value;
+    const vlEl = document.getElementById('a_village'); if(vlEl) state.user.village = vlEl.value;
+    const pnEl = document.getElementById('a_pin'); if(pnEl) state.user.pinCode = pnEl.value;
+  }
+  if(state.assessmentStep===2){
+    const el = document.getElementById('a_margin');
+    if(el) state.user.marginCapital = Number(el.value)||state.user.marginCapital;
+  }
+  if(state.assessmentStep===3){
+    const el = document.getElementById('a_desc');
+    if(el) state.assessment.description = el.value;
+    if(!state.assessment.category){ alert('Please select a business category to continue.'); return; }
+  }
+  if(state.assessmentStep===4){
+    const el = document.getElementById('a_margin2');
+    if(el) state.user.marginCapital = Number(el.value)||state.user.marginCapital;
+  }
+  state.assessmentStep++;
+  render();
+}
+
+function analyzeBusiness(){
+  computeFinance(state.user.marginCapital);
+  navigate('processing');
+  runProcessingAnimation();
+}
+
+const PROCESS_STEPS = [
+  'Connecting OpenStreetMap territorial coordinates','Computing population & household density via spatial model','Loading sector-specific unit economics & benchmarks',
+  'Mapping local competitors & price distribution','Calculating capital adequacy & debt service coverage ratio','Matching government subsidy schemes'
+];
+
+function renderProcessing(){
+  return `
+  <div class="ai-loading">
+    <div class="ai-spinner" id="aiSpinner"></div>
+    <h2 class="section-title" style="text-align:center;">Calculating Enterprise Feasibility…</h2>
+    <div id="processStepsList" style="margin-top:24px;">
+      ${PROCESS_STEPS.map((s,i)=>`<div class="step-check" id="pstep${i}"><div class="mark">${i+1}</div>${s}</div>`).join('')}
+    </div>
+    <div id="processDone" class="hidden" style="margin-top:28px;">
+      <div class="badge badge-green" style="font-size:14px;padding:8px 20px;">✓ Calculations Verified</div>
+      <div style="margin-top:16px;"><button class="btn btn-primary btn-lg" onclick="navigate('report')">${t('dashboard.viewReportBtn')} →</button></div>
+    </div>
+  </div>`;
+}
+
+function runProcessingAnimation(){
+  let i=0;
+  const iv = setInterval(()=>{
+    const el = document.getElementById('pstep'+i);
+    if(el){ el.classList.add('on'); el.querySelector('.mark').textContent='✓'; }
+    i++;
+    if(i>=PROCESS_STEPS.length){
+      clearInterval(iv);
+      const spinner = document.getElementById('aiSpinner');
+      if(spinner) spinner.style.display='none';
+      const done = document.getElementById('processDone');
+      if(done) done.classList.remove('hidden');
+    }
+  }, 400);
+}
+
+function scrollToReportSection(id){
+  state.reportSection = id;
+  const el = document.getElementById('sec-'+id);
+  document.querySelectorAll('.toc-nav button').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('toc-'+id);
+  if(btn) btn.classList.add('active');
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+function renderReport(){
+  const f = state.finance;
+  const cat = state.assessment.category || state.user.businessInterest;
+  const dyn = calculateDynamicFeasibility(f.margin, cat, state.assessment.radius);
+
+  const reportToc = [
+    ['market', t('report.sec1')],
+    ['opportunity', t('report.sec2')],
+    ['competitor', t('report.sec3')],
+    ['swot', t('report.sec4')],
+    ['risk', t('report.sec5')],
+    ['pricing', t('report.sec6')]
+  ];
+
+  return `
+  <div class="report-header">
+    <div class="section-eyebrow" style="color:#94A3B8;">${t('report.eyebrow')}</div>
+    <h2 style="margin:4px 0 0;font-size:26px;color:#FFFFFF;">${getCategoryName(cat)} — ${state.user.village || 'Location'}, ${state.user.district}</h2>
+    <div class="meta-grid">
+      <div><div class="k">Analysis Center</div><div class="v">${state.user.village || 'Village'}, ${state.user.district}</div></div>
+      <div><div class="k">Coverage Territory</div><div class="v">${dyn.radiusKm} ${t('common.km')} (${dyn.areaSqKm} km²)</div></div>
+      <div><div class="k">${t('common.marginCapital')}</div><div class="v">${fmtINR(f.margin)}</div></div>
+      <div><div class="k">${t('common.projectCost')}</div><div class="v">${fmtINR(f.projectCost)}</div></div>
+      <div><div class="k">${t('common.loanAmount')}</div><div class="v">${fmtINR(f.loan)}</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="score-ring-wrap">
+      <div style="text-align:center;">
+        <div style="font-size:44px;font-weight:800;color:var(--md-sys-color-primary);font-family:var(--font-display);">${dyn.feasibilityScore}/100</div>
+        <div class="badge ${dyn.badgeClass}">${dyn.statusEmoji} ${dyn.readinessTier}</div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div class="hint" style="margin-bottom:6px;font-weight:600;">${t('report.overallScore')}</div>
+        <div class="progress-track" style="height:10px;"><div class="progress-fill" style="width:${dyn.feasibilityScore}%"></div></div>
+        <div class="tag-strip">
+          <span class="tag-chip">Target Reach: ${dyn.targetCustomers.toLocaleString('en-IN')} households</span>
+          <span class="tag-chip">Operating Margin: ${dyn.operatingMarginPct}%</span>
+          <span class="tag-chip">Active Markets: ${dyn.nearbyMarkets}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toc-nav">${reportToc.map(s=>`<button id="toc-${s[0]}" class="${s[0]==='market'?'active':''}" onclick="scrollToReportSection('${s[0]}')">${s[1]}</button>`).join('')}</div>
+
+  <div class="report-section" id="sec-market">
+    <h3><span class="num">1</span> ${t('report.sec1')}</h3>
+    <p class="section-sub">Spatial model for <b>${dyn.radiusKm} ${t('common.km')}</b> radius centered at <b>${state.user.village}</b>.</p>
+    
+    <div class="map-container-wrap">
+      <div id="reportMap" class="leaflet-map-el"></div>
+    </div>
+    <div class="map-legend">
+      <span><span class="sw" style="background:#1E40AF"></span>${t('common.location')}</span>
+      <span><span class="sw" style="background:#475569"></span>${t('report.activeMarkets')}</span>
+      <span><span class="sw" style="border:1.5px dashed #1E40AF;background:transparent;"></span>${dyn.radiusKm} ${t('common.km')}</span>
+    </div>
+
+    <div class="grid grid-4" style="margin-top:18px;">
+      <div class="stat-card"><div class="label">${t('report.popReach')}</div><div class="value">${dyn.populationReach.toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="label">${t('report.estHouseholds')}</div><div class="value">${dyn.totalHouseholds.toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="label">${t('report.targetHouseholds')}</div><div class="value">${dyn.targetCustomers.toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="label">${t('report.activeMarkets')}</div><div class="value">${dyn.nearbyMarkets}</div></div>
+    </div>
+  </div>
+
+  <div class="report-section" id="sec-opportunity">
+    <h3><span class="num">2</span> ${t('report.sec2')}</h3>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;">
+        <div>
+          <div class="section-eyebrow">Strategic Value Proposition</div>
+          <h4 style="margin:4px 0 0;">${dyn.baseOpportunity}</h4>
+        </div>
+        <span class="badge badge-green">Operating Margin: ${dyn.operatingMarginPct}%</span>
+      </div>
+      <ul style="font-size:14px;color:var(--md-sys-color-on-surface-variant);line-height:1.8;margin-top:16px;">
+        ${dyn.opportunityPoints.map(pt => `<li>${pt}</li>`).join('')}
+      </ul>
+    </div>
+  </div>
+
+  <div class="report-section" id="sec-competitor">
+    <h3><span class="num">3</span> ${t('report.sec3')}</h3>
+    <p class="section-sub">Identified providers operating within the ${dyn.radiusKm} ${t('common.km')} radius:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Competitor Type</th><th>Distance</th><th>Price Benchmark</th><th>Market Strength</th><th>Actionable Market Gap</th></tr></thead>
+        <tbody>
+          ${dyn.competitors.map(c => `
+            <tr>
+              <td><b>${c.name}</b></td>
+              <td>${c.dist}</td>
+              <td><b>${c.price}</b></td>
+              <td>${c.strength}</td>
+              <td style="color:var(--md-sys-color-primary);font-weight:500;">${c.gap}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="report-section" id="sec-swot">
+    <h3><span class="num">4</span> ${t('report.sec4')}</h3>
+    <div class="swot-grid">
+      <div class="swot-panel swot-s"><h4>Strengths</h4><ul>${dyn.swot.s.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+      <div class="swot-panel swot-w"><h4>Weaknesses</h4><ul>${dyn.swot.w.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+      <div class="swot-panel swot-o"><h4>Opportunities</h4><ul>${dyn.swot.o.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+      <div class="swot-panel swot-t"><h4>Threats</h4><ul>${dyn.swot.t.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+    </div>
+  </div>
+
+  <div class="report-section" id="sec-risk">
+    <h3><span class="num">5</span> ${t('report.sec5')}</h3>
+    <div class="card">
+      ${dyn.risks.map(r => riskRow(r.level, r.title, r.mit)).join('')}
+    </div>
+  </div>
+
+  <div class="report-section" id="sec-pricing">
+    <h3><span class="num">6</span> ${t('report.sec6')}</h3>
+    <div class="grid grid-3">
+      <div class="stat-card"><div class="label">${t('report.benchmarkAvg')}</div><div class="value">₹${dyn.avgPrice} / ${dyn.unitShort}</div></div>
+      <div class="stat-card"><div class="label">${t('report.priceRange')}</div><div class="value">₹${dyn.priceMin} – ₹${dyn.priceMax}</div></div>
+      <div class="stat-card"><div class="label">${t('report.entryPrice')}</div><div class="value" style="color:var(--md-sys-color-primary);">₹${dyn.avgPrice} / ${dyn.unitShort}</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+    <div><b>${t('report.nextStepPrompt')}</b></div>
+    <button class="btn btn-primary" onclick="navigate('scheme')">${t('report.openSchemeBtn')}</button>
+  </div>`;
+}
+
+function riskRow(level, title, mit){
+  const cls = level==='high'?'risk-high':(level==='med'?'risk-med':'risk-low');
+  const lbl = level==='high'?'High Priority':(level==='med'?'Medium':'Low');
+  return `<div class="risk-row"><div class="risk-dot ${cls}"></div><div><div class="risk-title">${title} <span class="hint">(${lbl})</span></div><div class="risk-mit">Protocol: ${mit}</div></div></div>`;
+}
+
+function renderSchemeCalculator(){
+  const f = state.finance;
+  return `
+  <div class="section-eyebrow">${t('scheme.eyebrow')}</div>
+  <h2 class="section-title">${t('scheme.title')}</h2>
+  <p class="section-sub">${t('scheme.subtitle')}</p>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="field" style="max-width:340px;">
+      <label>${t('common.marginCapital')} <span class="info-icon" title="Beneficiary 10% Contribution">i</span></label>
+      <div class="field-row"><div class="prefix">₹</div><input type="number" id="schemeMargin" value="${f.margin}" oninput="recalcScheme(this.value)"></div>
+    </div>
+    <p style="font-size:13.5px;color:var(--md-sys-color-on-surface-variant);">${t('scheme.formulaText')} ${fmtINR(f.margin)} ÷ 0.10 = <b>${fmtINR(f.projectCost)}</b></p>
+
+    <div class="flow-diagram">
+      <div class="flow-box margin"><div class="amt">${fmtINR(f.margin)}</div><div class="lbl">${t('scheme.marginBox')}</div></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-box loan"><div class="amt">${fmtINR(f.loan)}</div><div class="lbl">${t('scheme.loanBox')}</div></div>
+      <div class="flow-arrow">=</div>
+      <div class="flow-box total"><div class="amt">${fmtINR(f.projectCost)}</div><div class="lbl">${t('scheme.totalBox')}</div></div>
+    </div>
+
+    ${f.exceedsCap ? `<div class="demo-note" style="border-color:var(--md-sys-color-error);background:var(--md-sys-color-error-container);color:var(--md-sys-color-on-error);">⚠ Your calculated loan requirement of ${fmtINR(f.rawLoan)} exceeds the maximum funding limit of ${fmtINR(f.scheme.cap)} under this scheme. The eligible loan amount has been capped accordingly.</div>` : ''}
+    ${f.outOfRange ? `<div class="demo-note" style="border-color:var(--md-sys-color-warning);background:var(--md-sys-color-warning-container);color:var(--md-sys-color-on-warning);">ⓘ Your project cost exceeds standard presets. Figures shown use the closest matching scheme (Term Loan Scheme) for reference.</div>` : ''}
+  </div>
+
+  <div class="scheme-card">
+    <div class="ribbon">${t('common.recommended')}</div>
+    <div class="section-eyebrow">${t('scheme.matchedScheme')}</div>
+    <h2 style="margin:4px 0 0;">${f.scheme.name}</h2>
+    <div class="scheme-meta">
+      <div><div class="k">${t('scheme.interestRate')}</div><div class="v">${f.scheme.rate}% ${t('common.pa')}</div></div>
+      <div><div class="k">${t('scheme.tenure')}</div><div class="v">${f.scheme.tenureYears} ${t('common.year')}</div></div>
+      <div><div class="k">${t('scheme.moratorium')}</div><div class="v">${f.scheme.moratoriumMonths} ${t('common.month')}</div></div>
+      <div><div class="k">${t('scheme.sanctionedLoan')}</div><div class="v">${fmtINR(f.loan)}</div></div>
+    </div>
+    <p style="font-size:14px;color:var(--md-sys-color-on-surface-variant);margin-top:18px;"><b>${t('scheme.whyScheme')}</b> Project cost of ${fmtINR(f.projectCost)} fits the ${f.scheme.name} guidelines with up to ${fmtINR(f.scheme.cap)} funding support.</p>
+    <button class="btn btn-primary btn-lg" onclick="navigate('repayment')">${t('scheme.viewRepaymentBtn')}</button>
+  </div>
+
+  <div class="card" style="margin-top:24px;">
+    <h4 style="margin-top:0;">${t('scheme.refTableTitle')}</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Scheme Name</th><th>Cost Range</th><th>Max Funding</th><th>Interest Rate</th><th>Tenure</th><th>Grace Period</th></tr></thead>
+        <tbody>
+          <tr style="${f.scheme===SCHEMES.micro?'background:var(--md-sys-color-primary-container);font-weight:700;':''}"><td>Micro Finance Scheme</td><td>Up to ₹1.40 lakh</td><td>Up to ₹1.25 lakh</td><td>6.5% p.a.</td><td>3 years</td><td>3 months</td></tr>
+          <tr style="${f.scheme===SCHEMES.term?'background:var(--md-sys-color-primary-container);font-weight:700;':''}"><td>Term Loan Scheme</td><td>₹1.40 lakh – ₹50 lakh</td><td>Up to ₹45 lakh</td><td>8% p.a.</td><td>7 years</td><td>6 months</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="text-align:right;margin-top:18px;"><button class="btn btn-outline" onclick="navigate('costplanner')">View Detailed Cost Breakdown →</button></div>
+  `;
+}
+
+function recalcScheme(val){
+  const margin = Number(val)||0;
+  computeFinance(margin);
+  render();
+  const input = document.getElementById('schemeMargin');
+  if(input){ input.focus(); const v=input.value; input.value=''; input.value=v; }
+}
+
+function computeAmortization(principal, annualRatePct, tenureYears, moratoriumMonths, frequency){
+  const totalMonths = Math.round(tenureYears*12);
+  const repayMonths = Math.max(totalMonths - moratoriumMonths, 1);
+  const periodsPerYear = frequency==='quarterly' ? 4 : 12;
+  const periodMonths = frequency==='quarterly' ? 3 : 1;
+  const numPeriods = Math.max(Math.round(repayMonths/periodMonths),1);
+  const periodRate = (annualRatePct/100)/periodsPerYear;
+
+  let payment;
+  if(periodRate===0){ payment = principal/numPeriods; }
+  else { payment = principal * periodRate * Math.pow(1+periodRate,numPeriods) / (Math.pow(1+periodRate,numPeriods)-1); }
+
+  let balance = principal;
+  const schedule = [];
+  for(let i=1;i<=numPeriods;i++){
+    const interest = balance*periodRate;
+    let principalPaid = payment - interest;
+    if(i===numPeriods){ principalPaid = balance; payment = principalPaid+interest; }
+    balance = Math.max(balance - principalPaid,0);
+    schedule.push({period:i, principal:principalPaid, interest, payment:principalPaid+interest, balance});
+  }
+  const totalPayment = schedule.reduce((s,r)=>s+r.payment,0);
+  const totalInterest = schedule.reduce((s,r)=>s+r.interest,0);
+  return {emi:schedule[0]?schedule[0].payment:0, totalInterest, totalRepayment:totalPayment, schedule, numPeriods, periodMonths};
+}
+
+let emiChartInstance=null;
+function renderEmi(){
+  const e = state.emiInputs;
+  return `
+  <div class="section-eyebrow">${t('nav.emi')}</div>
+  <h2 class="section-title">EMI Calculator</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="field"><label>Loan Principal Amount</label><div class="field-row"><div class="prefix">₹</div><input type="number" id="emiAmount" value="${e.amount}" oninput="updateEmi()"></div></div>
+      <div class="field"><label>Interest Rate (% p.a.)</label><input type="number" step="0.1" id="emiRate" value="${e.rate}" oninput="updateEmi()"></div>
+      <div class="field"><label>Tenure (Years)</label><input type="number" id="emiTenure" value="${e.tenure}" oninput="updateEmi()"></div>
+      <div class="field"><label>Moratorium Grace Period (Months)</label><input type="number" id="emiMoratorium" value="${e.moratorium}" oninput="updateEmi()"></div>
+      <div class="field">
+        <label>Payment Frequency</label>
+        <div class="toggle-group">
+          <button class="${e.frequency==='monthly'?'active':''}" onclick="setEmiFreq('monthly')">Monthly</button>
+          <button class="${e.frequency==='quarterly'?'active':''}" onclick="setEmiFreq('quarterly')">Quarterly</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="grid grid-3" id="emiOutputCards">${emiOutputCardsHTML()}</div>
+      </div>
+      <div class="chart-box"><h4>Principal vs Total Interest Breakdown</h4><canvas id="emiChart" height="180"></canvas></div>
+    </div>
+  </div>
+  <div style="text-align:right;margin-top:16px;"><button class="btn btn-primary" onclick="navigate('repayment')">View Full Repayment Schedule →</button></div>
+  `;
+}
+
+function emiOutputCardsHTML(){
+  const e = state.emiInputs;
+  const r = computeAmortization(e.amount, e.rate, e.tenure, e.moratorium, e.frequency);
+  return `
+    <div class="stat-card"><div class="label">${e.frequency==='quarterly'?'Quarterly Payment':'Monthly EMI'}</div><div class="value">${fmtINR(r.emi)}</div></div>
+    <div class="stat-card"><div class="label">Total Interest Payable</div><div class="value">${fmtINR(r.totalInterest)}</div></div>
+    <div class="stat-card"><div class="label">Total Repayment Amount</div><div class="value">${fmtINR(r.totalRepayment)}</div></div>
+  `;
+}
+
+function setEmiFreq(f){ state.emiInputs.frequency=f; render(); drawEmiChart(); }
+function updateEmi(){
+  state.emiInputs.amount = Number(document.getElementById('emiAmount').value)||0;
+  state.emiInputs.rate = Number(document.getElementById('emiRate').value)||0;
+  state.emiInputs.tenure = Number(document.getElementById('emiTenure').value)||1;
+  state.emiInputs.moratorium = Number(document.getElementById('emiMoratorium').value)||0;
+  document.getElementById('emiOutputCards').innerHTML = emiOutputCardsHTML();
+  drawEmiChart();
+}
+
+function drawEmiChart(){
+  const canvas = document.getElementById('emiChart');
+  if(!canvas || typeof Chart==='undefined') return;
+  const e = state.emiInputs;
+  const r = computeAmortization(e.amount, e.rate, e.tenure, e.moratorium, e.frequency);
+  if(emiChartInstance) emiChartInstance.destroy();
+  emiChartInstance = new Chart(canvas.getContext('2d'), {
+    type:'doughnut',
+    data:{ labels:['Principal Loan','Total Interest'], datasets:[{ data:[e.amount, r.totalInterest], backgroundColor:['#1E40AF','#3B82F6'] }] },
+    options:{ plugins:{legend:{position:'bottom'}} }
+  });
+}
+
+function renderRepayment(){
+  const e = state.emiInputs;
+  const r = computeAmortization(e.amount, e.rate, e.tenure, e.moratorium, e.frequency);
+  const rows = r.schedule.slice(0, 40).map(row=>`
+    <tr><td>Period ${row.period}</td><td>${fmtINR(row.principal)}</td><td>${fmtINR(row.interest)}</td><td><b>${fmtINR(row.payment)}</b></td><td>${fmtINR(row.balance)}</td></tr>
+  `).join('');
+  return `
+  <div class="section-eyebrow">${t('nav.repayment')}</div>
+  <h2 class="section-title">Amortization Timeline</h2>
+
+  <div class="timeline-h">
+    <div class="t-node"><div class="t-dot"></div><div class="t-label">Loan<br>Sanction</div></div>
+    <div class="t-line"></div>
+    <div class="t-node"><div class="t-dot"></div><div class="t-label">Grace Period<br>(${e.moratorium} mo)</div></div>
+    <div class="t-line"></div>
+    <div class="t-node"><div class="t-dot"></div><div class="t-label">Repayment<br>Starts</div></div>
+    <div class="t-line"></div>
+    <div class="t-node"><div class="t-dot"></div><div class="t-label">${e.frequency==='quarterly'?'Quarter 1':'Month 1'}</div></div>
+    <div class="t-line"></div>
+    <div class="t-node"><div class="t-dot"></div><div class="t-label">…</div></div>
+    <div class="t-line"></div>
+    <div class="t-node"><div class="t-dot" style="background:var(--md-sys-color-success)"></div><div class="t-label">Debt<br>Free</div></div>
+  </div>
+
+  <div class="toggle-group" style="margin-bottom:16px;">
+    <button class="${e.frequency==='monthly'?'active':''}" onclick="setEmiFreq('monthly');navigate('repayment')">Monthly</button>
+    <button class="${e.frequency==='quarterly'?'active':''}" onclick="setEmiFreq('quarterly');navigate('repayment')">Quarterly</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Period</th><th>Principal Paid</th><th>Interest Paid</th><th>Total Installment</th><th>Remaining Principal</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  ${r.schedule.length>40 ? `<p class="hint" style="margin-top:8px;">Showing first 40 of ${r.schedule.length} installment cycles.</p>` : ''}
+  `;
+}
+
+let costChartInstance=null;
+function renderCostPlanner(){
+  const items = state.costPlanner.items;
+  const total = items.reduce((s,i)=>s+Number(i.amt||0),0);
+  const rows = items.map((it,idx)=>`
+    <tr>
+      <td>${it.cat}</td>
+      <td><div class="field-row" style="max-width:180px;"><div class="prefix">₹</div><input type="number" value="${it.amt}" oninput="updateCostItem(${idx},this.value)"></div></td>
+      <td>${total>0?((it.amt/total)*100).toFixed(1):'0'}%</td>
+    </tr>`).join('');
+  return `
+  <div class="section-eyebrow">Capital Allocation Model</div>
+  <h2 class="section-title">Project Cost Breakdown</h2>
+  <div class="grid grid-2">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Budget Category</th><th>Amount Allocation</th><th>Share</th></tr></thead>
+        <tbody id="costRows">${rows}</tbody>
+        <tfoot><tr><td style="font-weight:700;">Total Project Cost</td><td colspan="2" style="font-weight:800;color:var(--md-sys-color-primary);" id="costTotal">${fmtINR(total)}</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="chart-box"><h4>Capital Allocation</h4><canvas id="costChart" height="220"></canvas></div>
+  </div>
+  `;
+}
+
+function updateCostItem(idx,val){
+  state.costPlanner.items[idx].amt = Number(val)||0;
+  const total = state.costPlanner.items.reduce((s,i)=>s+Number(i.amt||0),0);
+  document.getElementById('costTotal').textContent = fmtINR(total);
+  drawCostChart();
+}
+
+function drawCostChart(){
+  const canvas = document.getElementById('costChart');
+  if(!canvas || typeof Chart==='undefined') return;
+  const items = state.costPlanner.items;
+  if(costChartInstance) costChartInstance.destroy();
+  costChartInstance = new Chart(canvas.getContext('2d'), {
+    type:'pie',
+    data:{ labels:items.map(i=>i.cat), datasets:[{ data:items.map(i=>i.amt), backgroundColor:['#1E40AF','#2563EB','#3B82F6','#60A5FA','#93C5FD','#1E293B','#475569','#0F172A'] }] },
+    options:{ plugins:{legend:{position:'right', labels:{boxWidth:12,font:{size:11}}}} }
+  });
+}
+
+function renderBusinessPlan(){
+  const f = state.finance;
+  const cat = state.assessment.category || state.user.businessInterest;
+  const dyn = calculateDynamicFeasibility(f.margin, cat, state.assessment.radius);
+  const emiCalc = computeAmortization(f.loan, f.scheme.rate, f.scheme.tenureYears, f.scheme.moratoriumMonths, 'monthly');
+
+  const sections = [
+    ['1. Executive Summary', `${state.user.name||'The entrepreneur'} proposes to establish a ${getCategoryName(cat)} enterprise in ${state.user.village || 'Rani'}, ${state.user.district}, with a total project cost of ${fmtINR(f.projectCost)}, supported by ${fmtINR(f.margin)} (10%) margin capital and ${fmtINR(f.loan)} (90%) loan under the ${f.scheme.name}.`],
+    ['2. Territorial Market Analysis', `Identified target population of ${dyn.populationReach.toLocaleString('en-IN')} across a ${dyn.radiusKm} km radius with an addressable base of ${dyn.targetCustomers.toLocaleString('en-IN')} households and ${dyn.nearbyMarkets} trading haats.`],
+    ['3. Competitive Positioning & Pricing', `Sector benchmark unit price: ₹${dyn.avgPrice}/${dyn.unitShort} (optimal range ₹${dyn.priceMin}–₹${dyn.priceMax}). Competitor benchmarking reveals actionable gaps in doorstep reliability and standardized quality.`],
+    ['4. Financial Projections & Cash Flow', `Estimated monthly revenue of ${fmtINR(dyn.projections.monthlyRevenue)} against operating costs of ${fmtINR(dyn.projections.monthlyOperatingCost)}, generating an estimated monthly gross operating surplus of ${fmtINR(dyn.projections.monthlyGrossProfit)} against monthly EMI of ${fmtINR(emiCalc.emi)}.`],
+    ['5. Financing Structure', `10% Beneficiary Margin (${fmtINR(f.margin)}) + 90% Institutional Loan (${fmtINR(f.loan)}) sanctioned under ${f.scheme.name} at ${f.scheme.rate}% p.a. over ${f.scheme.tenureYears} years with ${f.scheme.moratoriumMonths} months moratorium.`],
+    ['6. Risk Management Plan', `Primary identified risk (${dyn.risks[0]?.title || 'Supply disruption'}) mitigated via protocol: "${dyn.risks[0]?.mit || 'Maintain dual suppliers and 30-day buffer inventory'}"`]
+  ];
+  return `
+  <div class="topbar-inline">
+    <div>
+      <div class="section-eyebrow">${t('nav.plan')}</div>
+      <h2 class="section-title">${getCategoryName(cat)} Business Plan</h2>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="alert('Business plan generated and verified.')">Generate Report</button>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">Print Dossier</button>
+    </div>
+  </div>
+  ${sections.map(s=>`<details class="plan-section"><summary>${s[0]}</summary><div class="pbody">${s[1]}</div></details>`).join('')}
+  `;
+}
+
+function renderAdminLogin(){
+  return `
+  <div class="auth-wrap">
+    <div class="auth-side">
+      <h2>Administrator Console</h2>
+      <p>Supervise enterprise applications, geographic demand indices, and financing scheme sanctions.</p>
+    </div>
+    <div class="auth-form">
+      <div class="auth-box">
+        <h2 class="font-head" style="color:var(--md-sys-color-on-surface);margin:0 0 4px;">Administrator Login</h2>
+        <p style="color:var(--md-sys-color-on-surface-variant);font-size:13.5px;margin:0 0 20px;">Restricted access for nodal officers.</p>
+        <div class="field"><label>Official Identifier</label><input type="text" placeholder="Enter officer ID"></div>
+        <div class="field"><label>Password</label><input type="password" placeholder="Enter password"></div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="adminDemo()">Login to Console</button>
+        <div class="demo-box">
+          <div class="label">${t('auth.demoLabel')}</div>
+          <div class="demo-buttons"><button class="btn btn-secondary btn-sm" onclick="adminDemo()">${t('auth.demoAdmin')}</button></div>
+        </div>
+        <p class="login-hint"><a href="#" class="small-link" onclick="navigate('login');return false;">← Back to Entrepreneur Login</a></p>
+      </div>
+    </div>
+  </div>`;
+}
+
+const ADMIN_SIDEBAR = [
+  {ic:'🏠',lbl:'Program Overview'},{ic:'👥',lbl:'Entrepreneurs'},{ic:'📝',lbl:'Assessments'},
+  {ic:'📈',lbl:'Sector Analytics'},{ic:'🏦',lbl:'Scheme Sanctions'},{ic:'🗺️',lbl:'Spatial Insights'},
+  {ic:'📄',lbl:'Dossiers'},{ic:'⚙️',lbl:'Settings'}
+];
+
+function adminSidebarHTML(){
+  let html = `<div class="loc">🛡️ <b>Administrator Console</b><br>State Level Advisory Cell</div>`;
+  html += ADMIN_SIDEBAR.map((it,i)=>`<button class="nav-item ${i===0?'active':''}" onclick="render()"><span class="ic">${it.ic}</span> ${it.lbl}</button>`).join('');
+  html += `<div class="nav-sep"></div><button class="nav-item" onclick="logout()"><span class="ic">🚪</span> ${t('common.logout')}</button>`;
+  return html;
+}
+
+function renderAdminDashboard(){
+  return `
+  <div class="topbar-inline">
+    <div>
+      <div class="section-eyebrow">Administrator Portal</div>
+      <h2 class="section-title">Program Analytics &amp; Sanctions</h2>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <select><option>All States</option><option>Assam</option><option>Maharashtra</option></select>
+    <select><option>All Districts</option><option>Kamrup</option><option>Pune</option></select>
+    <select><option>All Sectors</option><option>Dairy &amp; Livestock</option><option>Retail</option></select>
+    <select><option>Last 30 Days</option><option>Last 90 Days</option><option>This Year</option></select>
+  </div>
+  <div class="grid grid-4" style="margin-bottom:24px;">
+    <div class="stat-card"><div class="label">Total Entrepreneurs</div><div class="value">1,482</div></div>
+    <div class="stat-card"><div class="label">Assessments Completed</div><div class="value">1,029</div></div>
+    <div class="stat-card"><div class="label">Feasibility Rate</div><div class="value">88.4%</div></div>
+    <div class="stat-card"><div class="label">Scheme Sanctions</div><div class="value">612</div></div>
+  </div>
+  <div class="grid grid-2" style="margin-bottom:18px;">
+    <div class="chart-box"><h4>Sector Application Demand</h4><canvas id="adminChart1" height="200"></canvas></div>
+    <div class="chart-box"><h4>District Applications</h4><canvas id="adminChart2" height="200"></canvas></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="chart-box"><h4>Scheme Distribution</h4><canvas id="adminChart3" height="200"></canvas></div>
+    <div class="chart-box"><h4>Risk Distribution</h4><canvas id="adminChart4" height="200"></canvas></div>
+  </div>
+  `;
+}
+
+let adminCharts = [];
+function drawAdminCharts(){
+  if(typeof Chart==='undefined') return;
+  adminCharts.forEach(c=>c.destroy()); adminCharts=[];
+  const c1 = document.getElementById('adminChart1');
+  if(c1) adminCharts.push(new Chart(c1.getContext('2d'), {type:'bar', data:{labels:['Dairy','Agri','Retail','Textiles','Fisheries','Food','Repair','Transport','Digital'], datasets:[{label:'Applications', data:[210,175,160,95,60,140,80,55,72], backgroundColor:'#1E40AF'}]}, options:{plugins:{legend:{display:false}}}}));
+  const c2 = document.getElementById('adminChart2');
+  if(c2) adminCharts.push(new Chart(c2.getContext('2d'), {type:'bar', data:{labels:['Kamrup','Nagaon','Barpeta','Jorhat','Sonitpur'], datasets:[{label:'Assessments', data:[240,190,160,145,132], backgroundColor:'#2563EB'}]}, options:{plugins:{legend:{display:false}}}}));
+  const c3 = document.getElementById('adminChart3');
+  if(c3) adminCharts.push(new Chart(c3.getContext('2d'), {type:'doughnut', data:{labels:['Micro Finance Scheme','Term Loan Scheme'], datasets:[{data:[38,62], backgroundColor:['#3B82F6','#1E40AF']}]}}));
+  const c4 = document.getElementById('adminChart4');
+  if(c4) adminCharts.push(new Chart(c4.getContext('2d'), {type:'doughnut', data:{labels:['Low Risk','Medium Risk','High Risk'], datasets:[{data:[55,32,13], backgroundColor:['#059669','#D97706','#DC2626']}]}}));
+}
+
+function finishProfileSetup(){
+  const marginEl = document.getElementById('marginInput');
+  const margin = marginEl ? Number(marginEl.value)||100000 : 100000;
+  state.user.marginCapital = margin;
+  state.loggedIn = true; state.role='entrepreneur';
+  computeFinance(margin);
+  navigate('dashboard');
+}
+
+computeFinance(state.user.marginCapital);
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    const saved = localStorage.getItem('bb_lang');
+    if(saved && I18N[saved]) state.lang = saved;
+  } catch(e){}
+  render();
+});
+</script>
+</body>
+</html>
