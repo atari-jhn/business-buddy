@@ -1190,7 +1190,7 @@ const state = {
   isGuest:false,
   authTab:'password',
   user:{
-    name:'Rina Bora', mobile:'9876543210', email:'',
+    name:'Stinky Potato', mobile:'9876543210', email:'',
     state:'Assam', district:'Kamrup', village:'Rani Village', pinCode:'781131',
     marginCapital:100000, businessInterest:'Dairy & Livestock'
   },
@@ -1905,7 +1905,7 @@ function entrepreneurDemo(){
   state.role = 'entrepreneur';
   state.isGuest = false;
   state.user = {
-    name:'Rina Bora', mobile:'9876543210', email:'',
+    name:'Stinky Potato', mobile:'9876543210', email:'',
     state:'Assam', district:'Kamrup', village:'Rani Village', pinCode:'781131',
     marginCapital:100000, businessInterest:'Dairy & Livestock'
   };
@@ -1984,7 +1984,7 @@ function renderRegister(){
     <p class="section-sub">Enter your details to save your enterprise dossiers.</p>
     <div class="card">
       <div class="grid grid-2">
-        <div class="field"><label>Full Name</label><input type="text" placeholder="e.g. Rina Bora"></div>
+        <div class="field"><label>Full Name</label><input type="text" placeholder="e.g. Stinky Potato"></div>
         <div class="field"><label>${t('auth.mobileLabel')}</label><div class="field-row"><div class="prefix">+91</div><input type="tel" placeholder="10-digit number"></div></div>
         <div class="field"><label>Email (Optional)</label><input type="email" placeholder="you@example.com"></div>
         <div class="field"><label>Language</label>
@@ -2142,7 +2142,7 @@ function renderProfilePage(){
   <div class="section-eyebrow">${t('nav.profile')}</div>
   <h2 class="section-title">Profile Parameters</h2>
   <div class="card grid grid-2">
-    <div class="field"><label>Full Name</label><input value="${state.user.name||'Rina Bora'}" oninput="state.user.name=this.value"></div>
+    <div class="field"><label>Full Name</label><input value="${state.user.name||'Stinky Potato'}" oninput="state.user.name=this.value"></div>
     <div class="field"><label>${t('auth.mobileLabel')}</label><input value="+91 ${state.user.mobile||'9876543210'}" disabled></div>
     <div class="field"><label>${t('common.state')}</label><input value="${state.user.state}" oninput="state.user.state=this.value"></div>
     <div class="field"><label>${t('common.district')}</label><input value="${state.user.district}" oninput="state.user.district=this.value"></div>
